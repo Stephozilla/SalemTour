@@ -1,414 +1,692 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salem, Oregon History Tour</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --color-bg: #ffffff;
-      --color-bg-secondary: #f5f5f3;
-      --color-text-primary: #1a1a18;
-      --color-text-secondary: #5f5e5a;
-      --color-border: rgba(0,0,0,0.12);
-      --color-border-hover: rgba(0,0,0,0.25);
-      --color-accent: #185FA5;
-      --color-accent-light: #E6F1FB;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --color-bg: #1c1c1a;
-        --color-bg-secondary: #252523;
-        --color-text-primary: #f0ede8;
-        --color-text-secondary: #9a9890;
-        --color-border: rgba(255,255,255,0.12);
-        --color-border-hover: rgba(255,255,255,0.25);
-        --color-accent: #5fa8e8;
-        --color-accent-light: #0c2a42;
-      }
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      background: var(--color-bg);
-      color: var(--color-text-primary);
-      font-size: 16px;
-      line-height: 1.7;
-      padding: 0 1rem;
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .tour-header {
-      padding: 2rem 0 1.25rem;
-      border-bottom: 0.5px solid var(--color-border);
-      margin-bottom: 1.5rem;
-    }
-    .tour-header h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
-    .tour-header p { font-size: 14px; color: var(--color-text-secondary); }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 1.5rem;
-    }
-    .stat {
-      background: var(--color-bg-secondary);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      text-align: center;
-    }
-    .stat-val { font-size: 22px; font-weight: 500; }
-    .stat-label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
-
-    .route-bar {
-      display: flex;
-      align-items: center;
-      overflow-x: auto;
-      padding: 1rem 0;
-      margin-bottom: 1.5rem;
-      scrollbar-width: none;
-      gap: 0;
-    }
-    .route-bar::-webkit-scrollbar { display: none; }
-    .stop-dot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-    .stop-dot .dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 500;
-      border: 0.5px solid var(--color-border);
-      background: var(--color-bg);
-      color: var(--color-text-secondary);
-      transition: all 0.15s;
-    }
-    .stop-dot.active .dot {
-      background: var(--color-accent);
-      color: var(--color-accent-light);
-      border-color: var(--color-accent);
-    }
-    .stop-dot .stop-label {
-      font-size: 10px;
-      color: var(--color-text-secondary);
-      text-align: center;
-      max-width: 56px;
-      line-height: 1.3;
-    }
-    .route-line {
-      flex: 1;
-      min-width: 20px;
-      height: 0.5px;
-      background: var(--color-border);
-      flex-shrink: 0;
-      margin-bottom: 18px;
-    }
-
-    .detail-panel {
-      background: var(--color-bg-secondary);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    .detail-panel-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-    .detail-panel h2 { font-size: 18px; font-weight: 500; }
-    .era-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: var(--radius-md);
-      display: inline-block;
-      flex-shrink: 0;
-    }
-    .detail-meta {
-      font-size: 12px;
-      color: var(--color-text-secondary);
-      margin-bottom: 12px;
-    }
-    .detail-meta i { font-size: 14px; vertical-align: -2px; margin-right: 4px; }
-    .detail-panel p { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin-bottom: 12px; }
-    .tip-box {
-      background: var(--color-bg);
-      border: 0.5px solid var(--color-border);
-      border-left: 3px solid var(--color-accent);
-      border-radius: 0 var(--radius-md) var(--radius-md) 0;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: var(--color-text-secondary);
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-      margin-bottom: 1.5rem;
-    }
-    @media (max-width: 480px) { .cards-grid { grid-template-columns: 1fr; } }
-
-    .card {
-      background: var(--color-bg);
-      border: 0.5px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.25rem;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .card:hover { border-color: var(--color-border-hover); }
-    .card.active { border: 1.5px solid var(--color-accent); }
-    .card-num { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
-    .card-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
-    .card-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 10px; }
-    .card-meta { display: flex; gap: 12px; font-size: 12px; color: var(--color-text-secondary); align-items: center; }
-    .card-meta i { font-size: 14px; }
-
-    .nav-btns {
-      display: flex;
-      justify-content: space-between;
-      padding-bottom: 2rem;
-    }
-    .nav-btns button {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      padding: 8px 14px;
-      background: transparent;
-      border: 0.5px solid var(--color-border);
-      border-radius: var(--radius-md);
-      color: var(--color-text-primary);
-      cursor: pointer;
-      transition: background 0.12s;
-    }
-    .nav-btns button:hover { background: var(--color-bg-secondary); }
-    .nav-btns button:disabled { opacity: 0.35; cursor: default; }
-
-    footer {
-      text-align: center;
-      font-size: 12px;
-      color: var(--color-text-secondary);
-      padding: 1rem 0 2rem;
-      border-top: 0.5px solid var(--color-border);
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Salem, Oregon History Tour</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#eeecea;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#9a9890;
+  --border:rgba(0,0,0,.10);--border2:rgba(0,0,0,.20);
+  --accent:#185FA5;--accent-l:#E6F1FB;
+  --danger-bg:#FCEBEB;--danger:#A32D2D;
+  --r-md:8px;--r-lg:12px;--r-xl:16px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+  --text:#f0ede8;--text2:#9a9890;--text3:#6a6864;
+  --border:rgba(255,255,255,.10);--border2:rgba(255,255,255,.20);
+  --accent:#5fa8e8;--accent-l:#0c2a42;
+  --danger-bg:#2a1010;--danger:#e07070;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.7;padding:0 1rem;max-width:860px;margin:0 auto}
+.site-header{padding:2rem 0 1.25rem;border-bottom:.5px solid var(--border);margin-bottom:1.5rem}
+.site-header h1{font-size:24px;font-weight:500;margin-bottom:4px}
+.site-header p{font-size:13px;color:var(--text2)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+@media(max-width:500px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--bg2);border-radius:var(--r-md);padding:12px;text-align:center}
+.stat-val{font-size:20px;font-weight:500}
+.stat-label{font-size:11px;color:var(--text2);margin-top:2px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.filter-btn,.view-btn,.share-btn{font-size:12px;padding:5px 12px;border-radius:999px;border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:5px}
+.filter-btn:hover,.view-btn:hover,.share-btn:hover{background:var(--bg2);color:var(--text)}
+.filter-btn.active{background:var(--accent);color:var(--accent-l);border-color:var(--accent)}
+.view-btn.active{background:var(--bg2);color:var(--text)}
+.share-btn{margin-left:auto}
+.toolbar-sep{width:.5px;height:24px;background:var(--border2);margin:0 4px}
+.route-bar{display:flex;align-items:center;overflow-x:auto;padding:1rem 0;margin-bottom:1.5rem;scrollbar-width:none}
+.route-bar::-webkit-scrollbar{display:none}
+.stop-dot{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;cursor:pointer}
+.stop-dot .dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);transition:all .15s}
+.stop-dot.active .dot{background:var(--accent);color:var(--accent-l);border-color:var(--accent)}
+.stop-dot.dim .dot{opacity:.3}
+.stop-dot .stop-label{font-size:9px;color:var(--text2);text-align:center;max-width:52px;line-height:1.3}
+.route-line{flex:1;min-width:10px;height:.5px;background:var(--border);flex-shrink:0;margin-bottom:18px}
+.view-toggle{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+/* MAP */
+#mapContainer{height:340px;border-radius:var(--r-lg);overflow:hidden;margin-bottom:1.5rem;border:.5px solid var(--border);display:none}
+#mapContainer.visible{display:block}
+.leaflet-popup-content-wrapper{border-radius:var(--r-md)!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif!important;font-size:13px!important}
+.leaflet-popup-content{margin:10px 14px!important}
+.map-stop-popup h3{font-size:13px;font-weight:500;margin-bottom:2px}
+.map-stop-popup p{font-size:11px;color:#5f5e5a}
+/* DETAIL */
+.detail-panel{background:var(--bg2);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.5rem}
+.detail-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.detail-panel h2{font-size:18px;font-weight:500}
+.era-badge{font-size:11px;padding:2px 8px;border-radius:var(--r-md);display:inline-block;flex-shrink:0}
+.detail-meta{font-size:12px;color:var(--text2);margin-bottom:10px}
+.detail-meta i{font-size:14px;vertical-align:-2px;margin-right:3px}
+/* THEN/NOW */
+.then-now{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.then-now-item{position:relative;border-radius:var(--r-md);overflow:hidden;background:var(--bg3);height:150px;display:flex;align-items:center;justify-content:center}
+.then-now-item img{width:100%;height:100%;object-fit:cover;display:block}
+.then-now-label{position:absolute;bottom:6px;left:6px;font-size:10px;font-weight:500;background:rgba(0,0,0,.55);color:#fff;padding:2px 7px;border-radius:999px}
+.then-now-caption{position:absolute;bottom:0;left:0;right:0;font-size:10px;color:#fff;background:rgba(0,0,0,.45);padding:4px 8px;line-height:1.4}
+.then-now-placeholder{text-align:center;color:var(--text3);font-size:11px;padding:8px;line-height:1.5}
+.then-now-placeholder i{font-size:20px;display:block;margin-bottom:4px;opacity:.35}
+/* INFO */
+.info-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.info-pill{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);background:var(--bg);border:.5px solid var(--border);border-radius:999px;padding:4px 10px}
+.info-pill i{font-size:13px}
+.info-pill a{color:var(--accent);text-decoration:none}
+.info-pill a:hover{text-decoration:underline}
+.access-note{font-size:11px;color:var(--text3);margin-bottom:10px}
+.season-note{font-size:12px;color:var(--text2);background:var(--bg);border:.5px solid var(--border);border-radius:var(--r-md);padding:8px 12px;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start}
+.season-note i{font-size:14px;color:var(--accent);flex-shrink:0;margin-top:2px}
+/* AUDIO */
+.audio-section{background:var(--bg);border:.5px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.25rem;margin-bottom:14px}
+.audio-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.audio-header span{font-size:13px;font-weight:500}
+.voice-badge{font-size:11px;color:var(--text2);background:var(--bg2);padding:2px 8px;border-radius:999px;margin-left:auto}
+.audio-len-toggle{display:flex;gap:6px;margin-bottom:10px}
+.len-btn{font-size:11px;padding:3px 10px;border-radius:999px;border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s}
+.len-btn.active{background:var(--accent);color:var(--accent-l);border-color:var(--accent)}
+.audio-controls{display:flex;align-items:center;gap:10px}
+.play-btn{width:36px;height:36px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;transition:opacity .12s}
+.play-btn:hover{opacity:.85}
+.waveform{flex:1;height:32px;background:var(--bg2);border-radius:var(--r-md);overflow:hidden;position:relative;cursor:pointer}
+.waveform-fill{height:100%;background:var(--accent-l);width:0%;transition:width .3s linear;border-radius:var(--r-md)}
+.waveform-bars{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-evenly;padding:4px;pointer-events:none}
+.waveform-bars span{width:2px;background:var(--accent);border-radius:1px;opacity:.5}
+.audio-time{font-size:11px;color:var(--text2);min-width:36px;text-align:right}
+.transcript-toggle{font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px;margin-top:8px}
+.transcript-box{margin-top:10px;padding:10px 14px;background:var(--bg2);border-radius:var(--r-md);font-size:13px;color:var(--text2);line-height:1.7;display:none;max-height:220px;overflow-y:auto}
+.transcript-box.open{display:block}
+/* BOXES */
+.detail-body{font-size:14px;line-height:1.75;color:var(--text2);margin-bottom:12px}
+.tip-box{background:var(--bg);border:.5px solid var(--border);border-left:3px solid var(--accent);border-radius:0 var(--r-md) var(--r-md) 0;padding:10px 14px;font-size:13px;color:var(--text2);margin-bottom:14px}
+.dyk-box{border:.5px solid var(--border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;background:var(--bg)}
+.dyk-label{font-size:11px;color:var(--accent);font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.dyk-box p{font-size:13px;color:var(--text2);line-height:1.6}
+.dark-box{border:.5px solid var(--border);border-left:3px solid var(--danger);border-radius:0 var(--r-md) var(--r-md) 0;padding:10px 14px;margin-bottom:14px;background:var(--danger-bg)}
+.dark-label{font-size:11px;color:var(--danger);font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.dark-box p{font-size:13px;color:var(--text2);line-height:1.6}
+.ripple-box{border:.5px solid var(--border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;background:var(--bg)}
+.ripple-label{font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.ripple-box p{font-size:13px;color:var(--text2);line-height:1.6}
+/* PEOPLE */
+.section-h{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.people-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.person-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--r-md);padding:8px 12px;font-size:12px;cursor:pointer;transition:border-color .12s;min-width:120px}
+.person-card:hover{border-color:var(--border2)}
+.person-name{font-weight:500;font-size:13px;margin-bottom:2px}
+.person-role{color:var(--text2);font-size:11px}
+/* CONNECTIONS */
+.conn-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.conn-chip{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--accent-l);color:var(--accent);cursor:pointer;border:.5px solid var(--accent);transition:opacity .12s}
+.conn-chip:hover{opacity:.75}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--r-xl);padding:1.5rem;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;position:relative}
+.modal h2{font-size:18px;font-weight:500;margin-bottom:4px}
+.modal-close{position:absolute;top:12px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);line-height:1;padding:0}
+.modal p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.modal-dates{font-size:12px;color:var(--text3);margin-bottom:10px}
+/* CUSTOM ROUTE */
+.custom-panel{background:var(--bg2);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.5rem;display:none}
+.custom-panel.visible{display:block}
+.custom-stops{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cstop-btn{font-size:12px;padding:5px 12px;border-radius:999px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .12s}
+.cstop-btn.on{background:var(--accent);color:var(--accent-l);border-color:var(--accent)}
+.custom-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.custom-actions button{font-size:12px;padding:6px 14px;border-radius:var(--r-md);border:.5px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;transition:background .12s}
+.custom-actions button:hover{background:var(--bg3)}
+.custom-actions .primary{background:var(--accent);color:var(--accent-l);border-color:var(--accent)}
+.custom-result{font-size:13px;color:var(--text2);line-height:1.8}
+/* TIMELINE */
+.timeline-panel{display:none;margin-bottom:1.5rem}
+.timeline-panel.visible{display:block}
+.tl-item{display:flex;gap:16px;padding:12px 0;border-bottom:.5px solid var(--border);cursor:pointer;transition:background .12s;border-radius:var(--r-md)}
+.tl-item:hover{background:var(--bg2);margin:0 -8px;padding:12px 8px}
+.tl-year{font-size:13px;font-weight:500;color:var(--accent);min-width:64px;padding-top:2px}
+.tl-content h3{font-size:14px;font-weight:500;margin-bottom:2px}
+.tl-content p{font-size:12px;color:var(--text2);line-height:1.5}
+/* CARDS */
+.cards-panel{display:none}
+.cards-panel.visible{display:block}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:1.5rem}
+@media(max-width:480px){.cards-grid{grid-template-columns:1fr}}
+.card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--r-lg);padding:1rem;cursor:pointer;transition:border-color .12s}
+.card:hover{border-color:var(--border2)}
+.card.active{border:1.5px solid var(--accent)}
+.card.dim{opacity:.3;pointer-events:none}
+.card-num{font-size:11px;color:var(--text2);margin-bottom:4px}
+.card-title{font-size:14px;font-weight:500;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px}
+.card-meta{font-size:11px;color:var(--text2)}
+/* NAV */
+.nav-btns{display:flex;justify-content:space-between;padding-bottom:2rem}
+.nav-btns button{display:flex;align-items:center;gap:6px;font-size:13px;padding:8px 14px;background:transparent;border:.5px solid var(--border);border-radius:var(--r-md);color:var(--text);cursor:pointer;transition:background .12s}
+.nav-btns button:hover{background:var(--bg2)}
+.nav-btns button:disabled{opacity:.3;cursor:default}
+footer{text-align:center;font-size:12px;color:var(--text3);padding:1rem 0 2rem;border-top:.5px solid var(--border)}
+@media print{.toolbar,.route-bar,.view-toggle,#navBtns,.audio-section,.modal-overlay,#mapContainer,footer{display:none!important}body{max-width:100%;padding:0}.cards-panel{display:block!important}.cards-grid{grid-template-columns:repeat(2,1fr)}.card{border:1px solid #ccc}}
+</style>
 </head>
 <body>
-
-<header class="tour-header">
+<header class="site-header">
   <h1>Salem, Oregon history tour</h1>
-  <p>8 stops · Walking &amp; driving route · Est. 4–5 hours</p>
+  <p>10 stops &middot; Walking &amp; driving route &middot; Est. 5&ndash;6 hours &middot; First-person audio narration at every stop</p>
 </header>
-
 <div class="stats-row">
-  <div class="stat"><div class="stat-val">8</div><div class="stat-label">Historic stops</div></div>
-  <div class="stat"><div class="stat-val">1840s</div><div class="stat-label">Earliest stop</div></div>
-  <div class="stat"><div class="stat-val">4–5 hrs</div><div class="stat-label">Estimated time</div></div>
+  <div class="stat"><div class="stat-val">10</div><div class="stat-label">Historic stops</div></div>
+  <div class="stat"><div class="stat-val">1841</div><div class="stat-label">Earliest stop</div></div>
+  <div class="stat"><div class="stat-val">5&ndash;6 hrs</div><div class="stat-label">Est. total time</div></div>
+  <div class="stat"><div class="stat-val">Free&ndash;$10</div><div class="stat-label">Admission range</div></div>
 </div>
-
-<nav aria-label="Tour route" class="route-bar" id="routeBar"></nav>
-
-<section aria-live="polite" class="detail-panel" id="detailPanel"></section>
-
-<section class="cards-grid" id="cardsGrid"></section>
-
-<div class="nav-btns">
-  <button id="prevBtn" onclick="navigate(-1)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Previous</button>
-  <button id="nextBtn" onclick="navigate(1)">Next <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+<div class="toolbar" id="toolbar">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" onclick="setFilter('pioneer',this)">Pioneer</button>
+  <button class="filter-btn" onclick="setFilter('civic',this)">Civic</button>
+  <button class="filter-btn" onclick="setFilter('victorian',this)">Victorian</button>
+  <button class="filter-btn" onclick="setFilter('cultural',this)">Cultural</button>
+  <button class="filter-btn" onclick="setFilter('commercial',this)">Commercial</button>
+  <div class="toolbar-sep"></div>
+  <button class="share-btn" onclick="shareStop()"><i class="ti ti-share"></i> Share stop</button>
+  <button class="share-btn" onclick="window.print()"><i class="ti ti-printer"></i> Print</button>
 </div>
-
-<footer>Salem, Oregon History Tour &mdash; Built with GitHub Pages</footer>
-
+<nav class="route-bar" id="routeBar" aria-label="Tour route"></nav>
+<div class="view-toggle">
+  <button class="view-btn active" id="btnRoute" onclick="setView('route')"><i class="ti ti-map-pin"></i> Route</button>
+  <button class="view-btn" id="btnMap" onclick="setView('map')"><i class="ti ti-map"></i> Map</button>
+  <button class="view-btn" id="btnTimeline" onclick="setView('timeline')"><i class="ti ti-timeline"></i> Timeline</button>
+  <button class="view-btn" id="btnCards" onclick="setView('cards')"><i class="ti ti-layout-grid"></i> All stops</button>
+  <button class="view-btn" id="btnCustom" onclick="setView('custom')"><i class="ti ti-route"></i> Build route</button>
+</div>
+<div id="mapContainer"></div>
+<section id="detailPanel" class="detail-panel" aria-live="polite"></section>
+<div class="timeline-panel" id="timelinePanel"></div>
+<div class="cards-panel" id="cardsPanel"><div class="cards-grid" id="cardsGrid"></div></div>
+<div class="custom-panel" id="customPanel"></div>
+<div class="nav-btns" id="navBtns">
+  <button id="prevBtn" onclick="navigate(-1)"><i class="ti ti-arrow-left"></i> Previous</button>
+  <button id="nextBtn" onclick="navigate(1)">Next <i class="ti ti-arrow-right"></i></button>
+</div>
+<div class="modal-overlay" id="personModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    <h2 id="mName"></h2><div class="modal-dates" id="mDates"></div>
+    <p id="mBio"></p><p id="mLegacy" style="font-style:italic;font-size:13px"></p>
+  </div>
+</div>
+<footer>Salem, Oregon History Tour &middot; Built with GitHub Pages &middot; Press &larr;&rarr; to navigate &middot; Space to play audio</footer>
 <script>
-  const stops = [
-    {
-      num: 1,
-      name: "Mission Mill Museum",
-      short: "Mission Mill",
-      era: "1840s",
-      eraType: "pioneer",
-      walk: "Start here",
-      time: "45 min",
-      desc: "The oldest surviving woolen mill complex in the Pacific Northwest. Founded by Methodist missionaries, this site captures Salem's transformation from mission outpost to pioneer settlement.",
-      detail: "Built by the Methodist Mission in 1841, Mission Mill became a hub of early commerce in the Willamette Valley. The Thomas Kay Woolen Mill on this site later grew into one of Oregon's largest textile operations. The museum complex preserves four original historic homes alongside the mill machinery — giving an unusually complete picture of daily pioneer life.",
-      tip: "Stop into the Jason Lee House — it's the oldest standing American home in the Pacific Northwest."
-    },
-    {
-      num: 2,
-      name: "Willamette Heritage Center",
-      short: "Heritage Ctr",
-      era: "1840s–1900s",
-      eraType: "pioneer",
-      walk: "2 min walk",
-      time: "30 min",
-      desc: "Adjacent to Mission Mill, the Heritage Center contextualizes Salem's growth from a missionary outpost into Oregon's capital city, with rotating exhibits on Willamette Valley history.",
-      detail: "The center houses artifacts, photographs, and oral histories that trace Salem's evolution over 175 years. Exhibits explore the region's Indigenous Kalapuyan people, the Oregon Trail, and the city's role in territorial politics. A great bridge between the mill visit and the Capitol building to come.",
-      tip: "Check their rotating exhibits before you visit — the schedule is on their website and changes seasonally."
-    },
-    {
-      num: 3,
-      name: "Oregon State Capitol",
-      short: "State Capitol",
-      era: "1938",
-      eraType: "civic",
-      walk: "15 min walk",
-      time: "30 min",
-      desc: "Oregon's Art Deco capitol, completed in 1938, crowned by the famous gold-leaf Pioneer atop its dome. The building replaced two earlier capitols lost to fire.",
-      detail: "The current Capitol is Salem's third — its predecessors burned in 1855 and 1935. Designed by Francis Keally, the building features striking Art Deco murals in the rotunda depicting Oregon's history and the state's founding industries. The Pioneer statue atop the dome stands 23 feet tall and is covered in gold leaf.",
-      tip: "Free guided tours run Monday through Friday. The rotunda murals alone are worth the stop."
-    },
-    {
-      num: 4,
-      name: "Capitol Mall & Willson Park",
-      short: "Capitol Mall",
-      era: "1930s–present",
-      eraType: "civic",
-      walk: "2 min walk",
-      time: "15 min",
-      desc: "The formal green space surrounding the Capitol, designed in the City Beautiful tradition. A peaceful break between stops and a good vantage for Capitol photographs.",
-      detail: "Willson Park was named for William H. Willson, a Methodist missionary who platted the original town of Salem in 1844. The park's tree canopy includes many mature specimens planted in the early 20th century. The mall was redesigned as part of the Capitol construction project in the 1930s to create a formal civic axis.",
-      tip: "Best Capitol photos are from the north end of the mall, especially in morning light."
-    },
-    {
-      num: 5,
-      name: "Deepwood Museum & Gardens",
-      short: "Deepwood",
-      era: "1894",
-      eraType: "victorian",
-      walk: "20 min drive",
-      time: "45 min",
-      desc: "An 1894 Queen Anne-style Victorian home with original interiors intact, set on formal English gardens. One of Salem's finest historic homes.",
-      detail: "Built by Dr. Luke Port in 1894, Deepwood passed through several prominent Salem families before being preserved as a museum. The house retains much of its original interior woodwork, stained glass, and furnishings. The surrounding formal gardens were designed by landscape architects Elizabeth Lord and Edith Schryver in the 1920s — a pioneering women-run landscape firm in Oregon.",
-      tip: "The gardens are free to walk — arrive early and have them almost to yourself."
-    },
-    {
-      num: 6,
-      name: "Bush's Pasture Park & House",
-      short: "Bush House",
-      era: "1877",
-      eraType: "victorian",
-      walk: "5 min drive",
-      time: "30 min",
-      desc: "The 1877 Italianate mansion of newspaper publisher Asahel Bush II, set on 90 acres of parkland. One of Oregon's most significant examples of 19th-century residential architecture.",
-      detail: "Asahel Bush II was one of Salem's most powerful figures — a banker and newspaper editor who shaped Oregon politics for decades. His home remained in the Bush family for nearly 100 years. The interior is preserved with original furnishings, and the estate includes Oregon's first greenhouse still in use, operating continuously since the 1880s.",
-      tip: "The greenhouse is open for tours and still grows heritage roses and exotic plants."
-    },
-    {
-      num: 7,
-      name: "Historic Elsinore Theatre",
-      short: "Elsinore",
-      era: "1926",
-      eraType: "cultural",
-      walk: "10 min drive",
-      time: "20 min",
-      desc: "A stunning 1926 Tudor-Gothic revival theatre, one of the finest examples of atmospheric theatre design in the Pacific Northwest.",
-      detail: "Built in 1926 by architect Fred Elford, the Elsinore was designed to evoke the atmosphere of Hamlet's castle — hence the name. The interior features hand-painted murals, Gothic stonework details, and an original Wurlitzer pipe organ. It operated as a movie palace into the 1980s and now hosts live performances. Listed on the National Register of Historic Places.",
-      tip: "Even if you can't catch a show, walk through the lobby — the interior is extraordinary."
-    },
-    {
-      num: 8,
-      name: "Historic Downtown & Commercial Street",
-      short: "Downtown",
-      era: "1890s–1930s",
-      eraType: "commercial",
-      walk: "5 min walk",
-      time: "30 min",
-      desc: "Salem's original commercial core preserves a remarkable density of late-Victorian and early 20th-century brick storefronts along Liberty and Commercial Streets.",
-      detail: "The blocks around Liberty Street NE contain some of the finest intact commercial architecture in Oregon — brick facades, cast-iron details, and corner buildings that date from Salem's first boom period in the 1890s. Walking this district closes the loop: by the time you've seen the mission, the capitol, and the Victorian homes, the commercial streetscape shows how all those forces came together into a real city.",
-      tip: "End the tour with a meal — the downtown restaurant scene has grown significantly in recent years."
-    }
-  ];
+// ── PEOPLE ────────────────────────────────────────────────
+const people={
+  jason_lee:{name:"Jason Lee",dates:"1803–1845",role:"Methodist missionary, Salem co-founder",bio:"A six-foot-three Canadian from Quebec, Lee led the first Methodist mission to the Pacific Northwest in 1834, eventually establishing what became Salem in 1841. He founded the Oregon Institute (now Willamette University), helped form the provisional government, and was fired by his own church in 1843 for not converting enough Indigenous people to justify the mission's expenses. He died at 41, still seeking vindication.",legacy:"The city he planted outlasted his reputation by two centuries. Jason Lee House — the first frame structure in the Oregon Territory — still stands on the Mission Mill campus."},
+  willson:{name:"William H. Willson",dates:"1805–1856",role:"Founder and namer of Salem",bio:"A ship's carpenter from New Hampshire who arrived in Oregon in 1837, Willson platted the city of Salem in 1846, naming it from the word meaning 'City of Peace.' He served as secretary at the Champoeg Meeting and first treasurer of the Provisional Government of Oregon. He donated land for the park now bearing his name beside the Capitol.",legacy:"He died in 1856 at 51, ten years after naming Salem. His street grid still defines the city. His park still stands."},
+  asahel_bush:{name:"Asahel Bush II",dates:"1824–1913",role:"Newspaper publisher, banker, political kingmaker",bio:"Massachusetts-born Bush founded the Oregon Statesman in 1851, moved it to Salem with the territorial capital, and ran it as a partisan instrument of power. His nickname was 'Bushy Bush.' He quietly opposed slavery in Oregon. After selling the paper in 1863, he co-founded the Ladd and Bush Bank in 1869 — one of the most powerful financial institutions in the state. He lived to 89.",legacy:"His newspaper became the Statesman Journal, still Salem's daily paper. His house, greenhouse, and 90-acre park are open to the public."},
+  elizabeth_lord:{name:"Elizabeth Lord",dates:"1887–1976",role:"Landscape architect, co-founder of Lord & Schryver",bio:"Daughter of Oregon Governor William Lord, Elizabeth studied landscape architecture at the Lowthorpe School and in England before returning to Oregon. In 1929 she co-founded Lord & Schryver with Edith Schryver — the first women-owned landscape architecture firm in the Pacific Northwest. They designed over 250 gardens across the region.",legacy:"Her Deepwood Garden design is the only one of the firm's domestic projects open to the public. The Lord & Schryver Conservancy maintains her work at Gaiety Hollow, two blocks from Deepwood."},
+  edith_schryver:{name:"Edith Schryver",dates:"1901–1984",role:"Landscape architect, co-founder of Lord & Schryver",bio:"Trained at the Lowthorpe School and under noted European and New York landscape architects, Schryver brought formal English garden design to the Pacific Northwest. She and Elizabeth Lord collaborated for forty years, designing gardens for Reed College, Bush House, and dozens of private estates.",legacy:"Her work at Deepwood — the Great Room, Tea House Garden, and Scroll Garden — survives intact and is freely open to visitors year-round."},
+  cyrus_reed:{name:"Cyrus Adams Reed",dates:"1825–1910",role:"Civil War general, legislator, Reed Opera House builder",bio:"Reed arrived in Salem in 1852 and served as Adjutant General of Oregon during the Civil War and three terms in the legislature. He built the Reed Opera House in 1869–70 at a cost of $75,000 and over a million bricks, originally intended as a government building before pivoting to commerce and culture when a new administration reneged.",legacy:"His opera house is still standing on Liberty Street — Salem's only remaining monumental 19th-century building — now home to shops, galleries, and a ballroom."},
+  george_guthrie:{name:"George B. Guthrie",dates:"1862–c.1940",role:"Attorney, arts patron, Elsinore Theatre builder",bio:"A Portland lawyer who graduated from Harvard Law School, Guthrie had operated Salem's Oregon Theatre since 1912 before commissioning the Elsinore in 1925. He hired Ellis F. Lawrence — founding dean of the University of Oregon School of Architecture — to design a theatre resembling Elsinore Castle from Hamlet. He insisted on Povey Brothers stained glass, hand-painted murals, Gothic stonework.",legacy:"Guthrie's vision produced what was heralded as the finest theatre between Portland and San Francisco. It still stands, fully restored, a century later."},
+  dean_brooks:{name:"Dr. Dean Brooks",dates:"1916–2009",role:"Superintendent, Oregon State Hospital",bio:"A psychiatrist who believed in the humanity and rehabilitation of patients at a time when many institutions did not. Brooks agreed to let the 'One Flew Over the Cuckoo's Nest' film crew use the hospital in 1975, insisting that real patients serve as extras and technical advisors as part of their therapy. He plays the fictional hospital superintendent in the film. Brooks spent decades advocating for patient rights and hospital reform.",legacy:"He served as superintendent from 1955 to 1981. His decision to open the hospital to filming brought unprecedented public attention to the reality of institutional psychiatric care."}
+};
 
-  const eraColors = {
-    pioneer:    { bg: "#E1F5EE", color: "#0F6E56" },
-    civic:      { bg: "#E6F1FB", color: "#185FA5" },
-    victorian:  { bg: "#FBEAF0", color: "#993556" },
-    cultural:   { bg: "#EEEDFE", color: "#534AB7" },
-    commercial: { bg: "#FAEEDA", color: "#854F0B" }
-  };
+// ── STOPS ────────────────────────────────────────────────
+const stops=[
+{num:1,name:"Mission Mill Museum",short:"Mission Mill",era:"1841",eraType:"pioneer",chronYear:1841,lat:44.9395,lng:-122.9987,walk:"Start here",time:"45 min",admission:"~$10 (WHC admission)",hours:"Wed–Sat 10am–4pm",parking:"Free lot at 1313 Mill St SE. Street parking on Mission St SE.",accessible:"Garden accessible; historic homes have steps.",seasonal:"Best in spring and fall. Summer brings school groups — arrive at opening for quiet.",website:"https://www.willametteheritage.org",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Willamette_Heritage_Center_-_Thomas_Kay_Woolen_Mill.jpg/640px-Willamette_Heritage_Center_-_Thomas_Kay_Woolen_Mill.jpg",
+historicCaption:"Thomas Kay Woolen Mill, c.1900 (Wikimedia Commons)",
+thenNowNote:"The Thomas Kay Woolen Mill building still stands on the same footprint. The creek still runs through the complex.",
+desc:"The oldest surviving woolen mill complex in the Pacific Northwest. Methodist missionaries founded this site — the seed from which Salem grew.",
+detail:"Built by the Methodist Mission in 1840–41, Mission Mill became a hub of early Willamette Valley commerce. The Thomas Kay Woolen Mill grew into one of Oregon's largest textile operations — a National Park Service-designated American Treasure. Four original historic homes survive on campus, including the Jason Lee House: the oldest frame structure in the Pacific Northwest.",
+tip:"The Jason Lee House is the first frame structure in the Oregon Territory, spring of 1841. Before it, everyone was in log cabins or tents.",
+dyk:"The Jason Lee House later served as Salem's second store, its first post office, and the treasury of the Territory of Oregon. It was nearly demolished in 1963 before being rescued and moved here.",
+dark:"The site was chosen for proximity to the Santiam Kalapuyan village of Chemeketa. The missionaries arrived to convert a people who had lived in the Willamette Valley for over 10,000 years. The 1855 Dayton Treaty removed all Kalapuyan peoples to the Grand Ronde Reservation. Oregon passed Black exclusion laws in 1844 — becoming the only free state admitted to the Union with an exclusion clause in its constitution, not removed until 1926.",
+ripple:"This site was the seed of Salem. The Oregon Institute founded nearby became Willamette University — oldest university west of the Rockies. The provisional government formed here became the framework for Oregon statehood in 1859.",
+people:["jason_lee","willson"],connections:[1],
+voiceName:"Mission Mill",
+shortScript:"I've been here since before Oregon was Oregon. My name is Mission Mill — I started as a Methodist mission project in 1840, when Jason Lee dammed Mill Creek. The Jason Lee House on these grounds was the first frame structure in the Oregon Territory. It meant permanence. It meant someone planned to stay. That house later served as Salem's second store, its first post office, and the treasury of the Territory of Oregon. In 1963 it was scheduled for demolition. Someone rescued it. Story of this place — repeatedly almost lost, repeatedly saved. I'm older than Oregon statehood. I'm older than the Capitol building you'll visit later — twice over, since that one burned down twice. I just want that on the record.",
+longScript:`I've been here since before Oregon was Oregon. Before it was even a proper territory. Before half of you could have found it on a map.\n\nMy name is Mission Mill. I started as a Methodist mission project in 1840, when Reverend Jason Lee had his crew dam Mill Creek and put up a lumber mill. Two years later they added a flour mill. By 1856, the Willamette Woolen Manufacturing Company had channeled water all the way from the Santiam River to run new looms on my property. First power-operated woolen mills on the Pacific Coast.\n\nJason Lee was a complicated man. Six-foot-three Canadian Methodist who walked across a continent — and then spent most of his energy building schools and forming provisional governments. In 1843, his own church fired him for not converting enough Indigenous people to justify the expense. He died two years later at 41, still seeking vindication.\n\nThe Jason Lee House was the first frame structure built in the Oregon Territory. Spring of 1841. Before that, everyone was in log cabins or tents. A frame house meant permanence.\n\nThat house later served as Salem's second store, its first post office, and the treasury of the Territory of Oregon. In 1963 it was scheduled for demolition. Someone rescued it and moved it here. Story of this place — repeatedly almost lost, repeatedly saved.\n\nI'm older than Oregon statehood. Older than the Capitol building you'll visit later — twice over, since that one burned down twice. I just want that on the record.`
+},
+{num:2,name:"Willamette Heritage Center",short:"Heritage Ctr",era:"1840s–present",eraType:"pioneer",chronYear:1845,lat:44.9396,lng:-122.9988,walk:"2 min walk",time:"30 min",admission:"~$10 adults",hours:"Wed–Sat 10am–4pm",parking:"Same lot as Mission Mill, 1313 Mill St SE.",accessible:"Mostly accessible; some historic buildings have steps.",seasonal:"Oregon Trail Live each September is excellent. Sheep to Shawl in May demonstrates the full wool process.",website:"https://www.willametteheritage.org",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Willametteheritage.jpg/640px-Willametteheritage.jpg",
+historicCaption:"Willamette Heritage Center campus (Wikimedia Commons / CC BY-SA)",
+thenNowNote:"Fourteen historic structures remain on five acres — many dating to the 1840s missionary era.",
+desc:"Fourteen historic structures on five acres weaving together the full story of the Willamette Valley — from Kalapuyan peoples who called it home for millennia to Oregon Trail pioneers and textile workers.",
+detail:"Formed in 2010 from the merger of Mission Mill Museum and the Marion County Historical Society. The center houses a research library, archive, and textile learning center. The Methodist Parsonage now centers the Kalapuya story alongside missionary and pioneer history. About 100,000 visitors come each year.",
+tip:"Most visitors approach through the Oregon Trail lens. Ask specifically about the Kalapuya exhibits in the Parsonage — they predate the mission era by thousands of years.",
+dyk:"The Kalapuyan people have oral histories describing witnessing the Missoula Floods fill the Willamette Valley — an event geologists date to 16,000–11,000 years ago.",
+dark:"The WHC now works actively to center Kalapuyan history — a significant shift from its origins as Mission Mill Museum, which told primarily the pioneer story. The 1855 Dayton Treaty removed Kalapuyan peoples from a valley their ancestors had inhabited for over 10,000 years.",
+ripple:"The Thomas Kay Woolen Mill's legacy lives directly in Pendleton Woolen Mills, still weaving in Oregon today. The Oregon Institute founded by the missionaries across the street became Willamette University — still operating.",
+people:["jason_lee"],connections:[0,2],
+voiceName:"The Heritage Center",
+shortScript:"People often walk through me looking for the Oregon Trail. But this valley was not empty before the wagon trains arrived. The Kalapuyan people have lived here since time immemorial. Their oral histories describe witnessing the Missoula Floods fill this valley — an event geologists date to 16,000 years ago. Then came French-Canadian fur traders in the 1820s, decades before the Oregon Trail existed. Then missionaries. Then wagon trains. I have fourteen historic structures on five acres. I am not just a museum. I am a conversation between the past and the present — and the Kalapuyan voice is part of that conversation now, as it always should have been.",
+longScript:`People often walk through me looking for the Oregon Trail. And the Oregon Trail is here. But I want to tell you something before you read a single exhibit label.\n\nThis valley was not empty before the wagon trains arrived.\n\nThe Kalapuyan people — distinct bands speaking related languages — have lived here since time immemorial. Their oral histories describe witnessing the Missoula Floods fill this valley to the brim, an event geologists date to between sixteen and eleven thousand years ago. They were fishing this river, burning these prairies for camas, and trading across the Cascades for generations before anyone in Europe had heard of Oregon.\n\nThen came the French-Canadian fur traders in the 1820s, who arrived decades before the Oregon Trail was a concept. Then the Methodist missionaries in the 1830s. Then the wagon trains in the 1840s.\n\nWhen Mission Mill Museum and the Marion County Historical Society merged in 2010, one of the first things the new organization did was redesign the exhibits to center more of these stories.\n\nThe Thomas Kay Woolen Mill's legacy lives on in Pendleton Woolen Mills, still weaving in Oregon today.\n\nI'm not just a museum. I'm a conversation between the past and the present. And the Kalapuya people's voice is part of that conversation now — as it always should have been.`
+},
+{num:3,name:"Oregon State Capitol",short:"State Capitol",era:"1938",eraType:"civic",chronYear:1938,lat:44.9385,lng:-123.0307,walk:"15 min walk",time:"30 min",admission:"Free",hours:"Mon–Fri 8am–5pm, Sat 9am–4pm",parking:"Capitol Mall lot off Court St NE. Metered street parking on Court and Cottage. Free on Sundays.",accessible:"Fully accessible.",seasonal:"Best in spring when grounds are in bloom. Summer has more guided tours. Avoid legislative session for a quieter visit.",website:"https://oregonlegislature.gov/capitolhistorygateway",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Salem_Oregon_Capitol_1935_fire.jpg/640px-Salem_Oregon_Capitol_1935_fire.jpg",
+historicCaption:"The second Oregon Capitol burning, April 25, 1935 (Wikimedia Commons / public domain)",
+thenNowNote:"The second Capitol burned spectacularly on April 25, 1935. The current white marble building replaced it in 1938.",
+desc:"Oregon's Art Deco capitol, completed in 1938 — the third Capitol on this site, as the first two burned. Crowned by the 22-foot gold-leaf Pioneer.",
+detail:"The first Capitol burned eleven days after its 1854 dedication. The second burned April 25, 1935, watched by crowds who drove in from Portland and Eugene. The white Vermont marble building completed in 1938 features Art Deco murals by Barry Faulkner in the rotunda, depicting the 1843 Champoeg Meeting — passed 52–50.",
+tip:"Free guided tours run Monday through Friday. The rotunda murals alone are worth the stop. On a clear day from the steps you can see Mt. Hood, Jefferson, and Adams.",
+dyk:"The Oregon Pioneer statue — the 'Gold Man' — traveled via the Panama Canal, then by rail, then truck. Workers found their equipment couldn't hoist it. Installation delayed days. Critics then called the pioneer 'insufficiently manly' and mocked his axe.",
+dark:"The same Champoeg Meeting depicted in the rotunda murals formed a provisional government that passed Oregon's first Black exclusion law the following year, 1844. Oregon became the only free state admitted to the Union with a racial exclusion clause in its constitution (1857). That clause was not removed until 1926.",
+ripple:"The Capitol sits on land platted by William Willson in 1846. The provisional government formed at Champoeg became the framework for Oregon Territory and the 33rd state in 1859.",
+people:["willson"],connections:[3,1],
+voiceName:"The State Capitol",
+shortScript:"I am Oregon's third State Capitol. The first burned eleven days after dedication. The second burned April 25, 1935 — Salemites were eating dinner when smoke poured from an elevator shaft. By the time firefighters arrived, the copper dome had collapsed. The Capital Journal reported a party flew in from Seattle to watch. I was completed in 1938 in white Vermont marble. The 52-to-50 Champoeg vote is painted in my rotunda. On my roof: the Oregon Pioneer. Twenty-two feet tall. 23-karat gold leaf. Shipped via Panama Canal. When workers tried to hoist him, their equipment failed. Critics later called him insufficiently manly. I have made my peace with him.",
+longScript:`I am Oregon's third State Capitol. I feel it's important you know that number — three — because my predecessors did not inspire confidence in the permanence of democratic governance.\n\nThe first Capitol was dedicated in 1854 and burned to the ground eleven days later.\n\nThe second Capitol lasted until the evening of April 25, 1935. Salemites were eating dinner when smoke began pouring from an elevator shaft. The fire raced through the building. By the time firefighters arrived from Portland, the copper dome had collapsed. The Capital Journal reported that a party had flown in from Seattle just to watch the conflagration. Oregonians: if nothing else, we know how to treat a disaster as a spectacle.\n\nI was authorized that same year and completed in 1938. White Vermont marble. Art Deco lines. Murals in the rotunda by Barry Faulkner depicting the 1843 Champoeg Meeting — where settlers voted 52 to 50 to form a provisional government.\n\nThis site was platted by William H. Willson in 1846 — the man who named Salem. He chose the name from the word meaning "City of Peace." Some days in the legislature that name feels more aspirational than descriptive.\n\nAnd then there is the gentleman on my roof. The Oregon Pioneer — 22 feet tall, 23-karat gold leaf. He traveled here via the Panama Canal, then by rail, then by truck. Workers discovered their equipment wasn't strong enough to hoist him. Installation was delayed days. Critics called him insufficiently manly and mocked his axe.\n\nLocals call him the Gold Man. I have made my peace with him.`
+},
+{num:4,name:"Capitol Mall & Willson Park",short:"Capitol Mall",era:"1846 / 1930s",eraType:"civic",chronYear:1846,lat:44.9400,lng:-123.0308,walk:"2 min walk",time:"15 min",admission:"Free",hours:"Open daily, dawn to dusk",parking:"Capitol Mall lot. Free street parking evenings and weekends.",accessible:"Fully accessible.",seasonal:"Best photographed in morning light. Rose garden peaks in June. November fog makes the Capitol especially atmospheric.",website:"https://www.travelsalem.com",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Oregon_State_Capitol_in_Salem.jpg/640px-Oregon_State_Capitol_in_Salem.jpg",
+historicCaption:"Oregon State Capitol viewed from the north (Wikimedia Commons / CC BY-SA)",
+thenNowNote:"Willson donated this land in 1846. The formal mall design was added in the 1930s alongside the Capitol construction.",
+desc:"The formal green space named for William Willson — the man who platted Salem in 1846. Best vantage for Capitol photographs.",
+detail:"William Willson arrived in Oregon in 1837 as a carpenter-turned-missionary. He platted Salem in 1846 with broad 99-foot avenues and 300-foot blocks, donated land for a park, and named the city Salem — from the word for 'City of Peace.' He was first treasurer of the Provisional Government of Oregon. Many trees in the canopy date to the early 20th century.",
+tip:"Best Capitol photographs come from the north end of the mall in morning light when the gold Pioneer catches the sun.",
+dyk:"William Willson died in 1856, just ten years after naming Salem and platting this park. He was 51 years old.",
+dark:"The Provisional Government Willson helped administer passed Oregon's first Black exclusion law in 1844 — the 'Lash Law' authorizing whipping Black settlers. Amended to forced labor before going into effect, repealed in 1845 — but its successors persisted until 1926.",
+ripple:"The land Willson donated directly enabled the Capitol's placement. Willamette University, across State Street, also stands on land from Willson's donation. His plat still defines Salem's street grid.",
+people:["willson"],connections:[2,4],
+voiceName:"Willson Park",
+shortScript:"People walk through me every day on their way to the Capitol and never think to ask why I'm here. I'm here because a ship's carpenter from New Hampshire donated me to a city that didn't exist yet. His name was William Willson. He arrived in Oregon in 1837, helped build the mission, and in 1846 platted this city — choosing the name Salem, from the word for City of Peace. He died in 1856, at fifty-one. Oregon had been a state for three years. His park is still here. So is his city.",
+longScript:`People walk through me every day on their way to the Capitol and never think to ask why I'm here. I'm here because a ship's carpenter from New Hampshire donated me to a city that didn't exist yet.\n\nHis name was William Willson. He came to Oregon in 1837 by ship, to work as a carpenter at Jason Lee's Methodist Mission. While here, he helped build the mission, learned medicine from a ship's doctor, and planted the settlement that became Salem.\n\nIn 1843, at the Champoeg Meeting, Willson served as secretary and cast one of the 52 votes that created the Provisional Government of Oregon. Then he became the government's first treasurer.\n\nIn 1846, the Oregon Institute board decided to plat a proper town. Willson was their agent. He laid out broad avenues ninety-nine feet wide, generous blocks about three hundred feet square, and donated land for a public park at the center. He named the settlement Salem — from the word for "City of Peace."\n\nHe died in 1856, at fifty-one. The park around me was redesigned in the 1930s when the Capitol was built. The trees you're standing under today include specimens planted in those years, now nearly a century old.\n\nI am the quietest stop on this tour. But I am also the most central — where the missionary era, the provisional government, and the Capitol all converge in a lawn.\n\nWilliam Willson named this city. His park is still here. So is his city.`
+},
+{num:5,name:"Deepwood Museum & Gardens",short:"Deepwood",era:"1894",eraType:"victorian",chronYear:1894,lat:44.9344,lng:-123.0219,walk:"20 min drive",time:"45 min",admission:"Gardens free; house tours $6",hours:"Gardens open daily; house tours vary by season",parking:"Free lot at 1116 Mission St SE. Ample and easy.",accessible:"Gardens fully accessible; house has entry stairs.",seasonal:"Gardens spectacular in May–June (roses, peonies). The 125-year-old quince tree blooms in early spring. Free docent garden tours every Thursday noon, April–September.",website:"https://www.deepwoodmuseum.org",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Deepwood_Estate_Salem_Oregon.jpg/640px-Deepwood_Estate_Salem_Oregon.jpg",
+historicCaption:"Deepwood Estate, Salem, Oregon (Wikimedia Commons / CC BY-SA)",
+thenNowNote:"The Great Room garden was a working vegetable plot from the 1890s through the 1920s before Lord & Schryver transformed it.",
+desc:"An 1894 Queen Anne Victorian home with original interiors, set on formal English gardens designed by the Pacific Northwest's first women-owned landscape architecture firm.",
+detail:"Built for Dr. Luke Port in 1894, Deepwood passed to Alice Brown in 1924. After her husband drowned in a fishing accident, Alice commissioned Elizabeth Lord and Edith Schryver in 1929 to transform the property. Lord and Schryver founded the first women-owned landscape architecture firm in the Pacific Northwest that year, designing 250+ gardens region-wide. Their Deepwood work — Great Room, Tea House Garden, Scroll Garden — is the only one of their domestic designs open to the public.",
+tip:"The gardens are free to walk any day. Arrive early for solitude. Thursday noon docent tours (April–September) are led by exceptionally knowledgeable guides.",
+dyk:"The estate was named after a children's book of the era: 'The Hollow Tree and Deep Woods Book' by Albert Bigelow Paine. The Povey Brothers stained glass in the windows is from the same studio that made the Elsinore Theatre's windows.",
+dark:"Elizabeth Lord's father was Oregon Governor William Paine Lord (1895–99). The social world that produced Deepwood's elegant gardens was built on land taken from Kalapuyan people through the 1855 Dayton Treaty. The formal gardens were designed in 1929–39 — while the Great Depression devastated working-class Salem.",
+ripple:"Lord and Schryver influenced garden design across the Pacific Northwest for forty years. Their home and studio — Gaiety Hollow, 545 Mission St SE — is two blocks away, listed on the National Register, and open for seasonal garden visits.",
+people:["elizabeth_lord","edith_schryver"],connections:[5],
+voiceName:"Deepwood",
+shortScript:"I was built in 1894 for a doctor who wanted a gentleman's estate. My name comes from a children's book. Three families lived within my walls. The last, Alice Brown, arrived in 1924 and commissioned Elizabeth Lord and Edith Schryver in 1929 — founders of the Pacific Northwest's first women-owned landscape architecture firm — to transform my vegetable gardens into formal outdoor rooms. The Great Room. The Tea House Garden. The Scroll Garden. Lord and Schryver designed over 250 gardens in their career. Mine is the only one open to the public. I have been a city park since 1971. The gardens are free to walk.",
+longScript:`I was built in 1894 for a doctor who wanted a gentleman's estate on the edge of a city that was still finding itself.\n\nMy name comes from a children's book. "The Hollow Tree and Deep Woods Book," by Albert Bigelow Paine. I have decided to take that as a compliment.\n\nThree families lived within my walls. Dr. Luke Port built me. Then Clifford and Alice Brown arrived in 1924. Clifford drowned in a fishing accident, leaving Alice with two adolescent sons and a property that needed reimagining.\n\nIn 1929, Alice hired Elizabeth Lord and Edith Schryver — founders of the first women-owned landscape architecture firm in the Pacific Northwest. What had been a large vegetable garden became the Great Room. They added the Tea House Garden and Scroll Garden. They collaborated with Alice for ten years.\n\nLord and Schryver went on to design over 250 gardens across the Pacific Northwest. My gardens are the only one of their domestic designs open to the public.\n\nThe stained glass in my windows was made by the Povey Brothers — the same studio that made the windows at the Elsinore Theatre. There is a thread running through Salem's best historic interiors.\n\nI have been a city park since 1971. The gardens are free to walk.`
+},
+{num:6,name:"Bush's Pasture Park & House",short:"Bush House",era:"1877",eraType:"victorian",chronYear:1877,lat:44.9282,lng:-123.0204,walk:"5 min drive",time:"30 min",admission:"Park free; house tours $6",hours:"Park daily; tours Wed–Sun 1–4pm",parking:"Free lot at park entrance on Mission St SE. Ample.",accessible:"Park fully accessible; house has entry stairs.",seasonal:"Rose garden peaks late June–July. Salem Art Fair (third weekend July) is lively but crowded. Bush Barn Art Center open year-round.",website:"https://bushhousemuseum.org",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Bush_House_Museum_Salem_Oregon.jpg/640px-Bush_House_Museum_Salem_Oregon.jpg",
+historicCaption:"Bush House Museum, Salem, Oregon (Wikimedia Commons / CC BY-SA)",
+thenNowNote:"The conservatory built for Bush's daughters in 1882 still stands — believed to be the first greenhouse west of the Mississippi, still growing period plants today.",
+desc:"The 1877 Italianate mansion of Asahel Bush II — newspaper publisher, banker, and political kingmaker — set on 90 acres of parkland with what is believed to be the oldest greenhouse west of the Mississippi River.",
+detail:"Asahel Bush arrived in Oregon in 1850 and founded the Oregon Statesman in 1851. He moved it to Salem with the capital, ran it as a partisan instrument of power, and co-founded the Ladd and Bush Bank in 1869. He built his 12-room Italianate mansion in 1877–78, and a conservatory for his daughters in 1882 — believed to be the first greenhouse west of the Mississippi.",
+tip:"Sally Bush, Asahel's daughter, selected the wallpaper as a young woman away at school. She came home and never left — living here until 1946. The greenhouse still grows heritage plants.",
+dyk:"Asahel Bush lived to 89, outlasting three of his four children. His daughter Sally lived here until 1946. His son Asahel III died in 1953 — the last family member — and the house has been open to the public ever since.",
+dark:"The Oregon Statesman, which Bush ran from 1851 to 1863, both reflected and shaped public opinion on Oregon's exclusion laws. The creek winding through the park is where Kalapuyan people camped and gathered camas for thousands of years before the estate was built over their landscape.",
+ripple:"Bush's Statesman Journal is still Salem's daily paper. The Ladd and Bush Bank he co-founded eventually became part of Wells Fargo. Lord & Schryver — who designed Deepwood — also designed the Bush House gardens.",
+people:["asahel_bush","elizabeth_lord","edith_schryver"],connections:[4,6],
+voiceName:"Bush House",
+shortScript:"I was built in 1877 by a man who had already decided he'd won. Asahel Bush arrived in Oregon in 1850, founded the Oregon Statesman, and ran it as an instrument of political power. His nickname was Bushy Bush. He sold the paper in 1863 after his wife died of tuberculosis, then founded the Ladd and Bush Bank. In 1877 he began building me — a twelve-room Italianate mansion overlooking Salem. In 1882 he built a conservatory for his daughters, believed to be the first greenhouse west of the Mississippi. It still stands. Sally Bush, his daughter, selected my wallpaper as a young woman. She came home and never left. She died here in 1946. I have been open to the public ever since.",
+longScript:`I was built in 1877 by a man who had already decided he'd won.\n\nAsahel Bush II arrived in Oregon Territory in 1850 from Westfield, Massachusetts. Within a year he had founded the Oregon Statesman. When the territorial capital moved to Salem in 1853, he moved his paper with it and ran it as a partisan instrument of political power. His nickname was "Bushy Bush." He quietly opposed slavery in Oregon.\n\nHe sold the paper in 1863, after his wife Eugenia died of tuberculosis at thirty-seven. He co-founded the Ladd and Bush Bank in 1869, which became one of the most powerful financial institutions in the state.\n\nIn 1877 he began construction on me. A twelve-room Italianate mansion on a hill overlooking Salem. In 1882, Bush built a conservatory for his daughters Sally and Eugenia — believed to be the oldest greenhouse west of the Mississippi River. Still standing. Still growing.\n\nSally Bush selected my wallpaper while she was away at school. She returned and never left. She died here in 1946. Her brother Asahel III died in 1953 — the last of the family — and the house passed to the City of Salem.\n\nI have been open to the public ever since. My original wallpaper is still on the walls.\n\nAsahel Bush built his empire and then built me to overlook it. I've been overlooking Salem ever since.`
+},
+{num:7,name:"Oregon State Hospital Museum",short:"OSH Museum",era:"1883",eraType:"civic",chronYear:1883,lat:44.9399,lng:-123.0035,walk:"10 min drive",time:"45 min",admission:"$8 general; $7 seniors/military/students; under 10 free",hours:"Wed–Sun 12pm–4pm",parking:"Free lot on site at 2600 Center St NE.",accessible:"Museum fully accessible; Kirkbride building exterior has some uneven surfaces.",seasonal:"No seasonal variation. A sobering visit — allow time to sit with the exhibits. The canister memorial is particularly powerful.",website:"https://www.oshmuseum.org",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Oregon_State_Hospital_historic.jpg/640px-Oregon_State_Hospital_historic.jpg",
+historicCaption:"Oregon State Hospital, Kirkbride building, c. early 1900s (Wikimedia Commons / public domain)",
+thenNowNote:"The original 1883 Kirkbride building — where 'One Flew Over the Cuckoo's Nest' was filmed — was partially demolished. The central portion was preserved and now houses the museum.",
+desc:"The oldest operating psychiatric hospital on the West Coast, founded in 1883 — and the filming location for 'One Flew Over the Cuckoo's Nest.' The museum inside confronts the history of institutional mental health care with honesty and dignity.",
+detail:"Oregon State Hospital opened in 1883 as the State Insane Asylum and was a pioneer in electroconvulsive therapy, lobotomies, eugenics, and hydrotherapy — at its peak housing over 3,600 patients. In 1975, director Miloš Forman filmed 'One Flew Over the Cuckoo's Nest' here, with superintendent Dr. Dean Brooks insisting real patients serve as extras and advisors as part of their therapy. A 2004 tour by lawmakers discovered thousands of unclaimed copper urns containing patient cremains — a catalyst for a $360-million rebuild completed in 2013.",
+tip:"The copper canister memorial — housing the cremated remains of thousands of unclaimed patients — is one of the most affecting public memorials in Oregon. Allow time to sit with it.",
+dyk:"Every major psychiatric institution on the West Coast refused to allow filming of 'One Flew Over the Cuckoo's Nest' because of how the film depicted mental illness. Oregon State Hospital said yes. Dr. Dean Brooks — who plays the fictional superintendent in the film — believed the public deserved to see inside.",
+dark:"OSH practiced eugenics — the forced sterilization of patients deemed 'unfit' — for decades under Oregon law. Between 1923 and 1983, Oregon forcibly sterilized approximately 2,648 people. Many patients were committed for conditions we now recognize as ordinary: epilepsy, depression, alcoholism, or simply being poor, unmarried, or immigrant. Thousands of patient cremains sat unclaimed in copper canisters for decades before being discovered in 2004.",
+ripple:"The public outcry following the film's Oscar sweep in 1976 — five wins including Best Picture — contributed to the deinstitutionalization movement and major mental health reform. The 2004 discovery of the unclaimed cremains led directly to Oregon's $360-million hospital rebuild and the creation of the museum.",
+people:["dean_brooks"],connections:[2,3],
+voiceName:"Oregon State Hospital",
+shortScript:"I opened in 1883 as the State Insane Asylum — a name that tells you everything about the era's understanding of mental health. At my peak in 1959, I housed over 3,600 patients. In 1975, filmmaker Miloš Forman arrived to shoot One Flew Over the Cuckoo's Nest. Every other institution on the West Coast had said no. My superintendent, Dr. Dean Brooks, said yes — and insisted real patients serve as extras as part of their therapy. He plays the fictional superintendent in the film. In 2004, lawmakers discovered thousands of copper canisters containing unclaimed patient cremains in one of my buildings. That discovery led to my $360-million rebuild and the creation of this museum. The canisters are here. The patients' names are here. This is their story.",
+longScript:`I opened in 1883 as the State Insane Asylum — a name that tells you something about what the era understood mental health to be.\n\nI was a pioneer. Not always in the good sense. Oregon was active in electroconvulsive therapy, lobotomies, eugenics, and hydrotherapy. Between 1923 and 1983, Oregon law authorized the forced sterilization of patients deemed unfit to reproduce. Approximately 2,648 people were sterilized here and at similar institutions across the state. Many had been committed for epilepsy, depression, or alcoholism. Some for being poor, unmarried, or foreign-born.\n\nAt my peak in 1959, I housed over 3,600 patients.\n\nIn January 1975, filmmaker Miloš Forman arrived to shoot Ken Kesey's "One Flew Over the Cuckoo's Nest." Every psychiatric institution on the West Coast had refused to participate — the subject matter was too controversial. My superintendent, Dr. Dean Brooks, said yes. He believed the public deserved to see inside a state hospital. He insisted that real patients serve as extras and technical advisors as part of their rehabilitation. He plays the fictional hospital superintendent in the film. The film won five Academy Awards in 1976, including Best Picture.\n\nIn 2004, a group of legislators touring the campus discovered thousands of copper canisters in a storage room. Each contained the cremated remains of a patient whose family had never claimed them. Some had been there for sixty years.\n\nThat discovery led to a $360-million rebuild, completed in 2013. The Kirkbride building where the film was shot was partially demolished. The central portion was preserved, and the museum opened in 2012.\n\nThe canisters are here. The patients' names are here. I am their record.`
+},
+{num:8,name:"Historic Elsinore Theatre",short:"Elsinore",era:"1926",eraType:"cultural",chronYear:1926,lat:44.9415,lng:-123.0373,walk:"15 min drive",time:"20 min",admission:"Lobby free; shows ticketed",hours:"Box office Mon–Fri 10am–5pm; event nights",parking:"Chemeketa Parkade (300 Commercial St NE) — free, 3 min walk. Marion Parkade (350 Marion St NE) also close.",accessible:"Fully accessible.",seasonal:"No bad season. Silent film nights with the Wurlitzer organ are especially memorable. Check the schedule — programming is year-round.",website:"https://elsinoretheatre.com",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Elsinore_Theatre_Salem_Oregon.jpg/640px-Elsinore_Theatre_Salem_Oregon.jpg",
+historicCaption:"Elsinore Theatre, Salem, Oregon (Wikimedia Commons / CC BY-SA)",
+thenNowNote:"Opening night, May 28, 1926: every seat filled for Cecil B. DeMille's 'The Volga Boatman,' accompanied live by the Mighty Wurlitzer. The theatre still hosts live performances today.",
+desc:"A 1926 Tudor-Gothic revival theatre designed to resemble Elsinore Castle from Hamlet. Clark Gable and John Philip Sousa performed here. The pipe organ — 1,800 pipes — is the largest in the Pacific Northwest.",
+detail:"Built by George Guthrie on a former livery stable site, designed by Ellis F. Lawrence — founding dean of the University of Oregon School of Architecture. The lobby features 30-foot Gothic arches, Povey Brothers stained glass, and blue lighting simulating a night sky. Murals over 20 feet tall depict Romeo & Juliet and Macbeth. It is the only theatre in the world with a Gothic nave-and-aisle foyer design.",
+tip:"Even if you can't catch a show, walk through the lobby. The organ still plays at silent film screenings — unlike anything else in Oregon.",
+dyk:"The day after opening, D.H. Upjohn wrote in the Capital Journal: 'When the grandsons and granddaughters of those who are now infants in the cradle have graying hair, The Elsinore will still stand, immutable, imperishable, a thing of beauty and a joy forever.' He was right.",
+dark:"The theatre was built during Oregon's peak exclusion era — the Black exclusion clause remained in the state constitution until 1926, the same year the Elsinore opened. Black performers who appeared on this stage toured through a region where many hotels and restaurants refused to serve them.",
+ripple:"The Elsinore's survival — saved from demolition twice — established a model for arts preservation in Salem. It anchors the performing arts district that has driven downtown's revitalization in recent decades.",
+people:["george_guthrie"],connections:[5,7],
+voiceName:"The Elsinore Theatre",
+shortScript:"I opened on a site where a livery stable had once stood. Where there was horse manure, now there is Shakespeare. May 28, 1926 — every seat filled for Cecil B. DeMille's The Volga Boatman on the Mighty Wurlitzer. The next morning D.H. Upjohn wrote in the Capital Journal: 'The Elsinore will still stand, immutable, imperishable, a thing of beauty and a joy forever.' I have 30-foot Gothic arches, Povey Brothers stained glass, and blue lighting that looks like a night sky. Clark Gable, Sousa, Gregory Peck, James Earl Jones — all performed here. In 1985 there was talk of demolishing me. A committee saved me. My pipe organ has 1,800 pipes — the largest in the Pacific Northwest. It still plays. The livery stable is not remembered at all.",
+longScript:`I opened on a site where a livery stable had once stood. I feel this is worth mentioning because it captures, in a single fact, everything about what I represent: where there was horse manure, now there is Shakespeare.\n\nThe date was May 28, 1926. Every seat was filled — all 1,290 of them — for two showings of Cecil B. DeMille's "The Volga Boatman," accompanied live on a Mighty Wurlitzer organ. The next morning, D.H. Upjohn wrote in the Capital Journal: "When the grandsons and granddaughters of those who are now infants in the cradle have graying hair, The Elsinore will still stand, immutable, imperishable, a thing of beauty and a joy forever."\n\nHe was right, though he might be surprised to learn how close it was.\n\nI was designed by Ellis F. Lawrence — founding dean of the University of Oregon School of Architecture — to resemble Elsinore Castle from Shakespeare's Hamlet. My lobby features 30-foot Gothic arches, vaulted ceilings, Povey Brothers stained glass, and blue lighting hidden in column capitals to simulate a night sky. Murals over 20 feet tall show the balcony scene from Romeo and Juliet and the witches from Macbeth.\n\nI was heralded as the finest theatre between Portland and San Francisco. Clark Gable performed on my stage. So did John Philip Sousa, Gregory Peck, Jack Benny, James Earl Jones, and Itzhak Perlman.\n\nIn 1985, there was serious talk of demolishing me. A committee formed to save me. They succeeded. In 2002, a $3.2 million restoration returned me to my 1920s splendor.\n\nMy pipe organ now has 1,800 pipes — the largest theatre organ in the Pacific Northwest. It still plays.\n\nI am the only theatre in the world with a foyer in the classic Gothic nave-and-aisle design.\n\nThe livery stable is not remembered at all.`
+},
+{num:9,name:"Historic Downtown & Reed Opera House",short:"Downtown",era:"1869–1930s",eraType:"commercial",chronYear:1869,lat:44.9431,lng:-123.0375,walk:"5 min walk",time:"30 min",admission:"Free to explore",hours:"Shops and restaurants vary; Reed Opera House open daily",parking:"Chemeketa Parkade (300 Commercial St NE) or Marion Parkade (350 Marion St NE) — free. As of mid-2025, street parking is metered Mon–Sat.",accessible:"Fully accessible.",seasonal:"Best in summer when downtown is most active. Farmers markets run May–October on weekdays. Salem Art Fair is third weekend of July.",website:"https://www.travelsalem.com/directory/reed-opera-house/",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Reed_Opera_House_Salem_Oregon.jpg/640px-Reed_Opera_House_Salem_Oregon.jpg",
+historicCaption:"Reed Opera House, Liberty St NE, Salem — early 1900s (Wikimedia Commons / public domain)",
+thenNowNote:"The Reed Opera House opened in 1870 for Governor Grover's inaugural ball. It has been a theatre, Supreme Court, hotel, department store, gambling hall, and now a marketplace — all in the same building.",
+desc:"Salem's original commercial core, anchored by the Reed Opera House — built of over a million bricks in 1869 — and a 44-acre historic district of Italianate, Romanesque, and Art Deco storefronts.",
+detail:"The Salem Downtown State Street–Commercial Street Historic District (National Register 2001) spans roughly 44 acres, ca. 1867–1950. The Reed Opera House opened September 27, 1870, for Governor Grover's inaugural ball. It housed at various times the Oregon Supreme Court, State Library, a 1,500-seat auditorium, hotel, saloons, and the best gambling parlor in town ca. 1893. Susan B. Anthony and President Hayes spoke here. The 11-story First National Bank Building (1927) remains downtown's only skyscraper. Beneath the sidewalks: tunnels marked by purple glass blocks.",
+tip:"Look down as you walk Liberty and Commercial Streets — purple glass blocks in the sidewalk mark the underground tunnels beneath downtown Salem. Metal plates cover where freight elevators once descended.",
+dyk:"The Reed Opera House was originally planned as a government building. When a new administration reneged, Cyrus Reed pivoted — adding shops, hotel, and a performance stage that hosted Susan B. Anthony and President Rutherford B. Hayes.",
+dark:"Oregon's Black exclusion clause meant the prosperity built along these streets was legally unavailable to Black Oregonians throughout most of the district's peak years. Salem's Chinatown once existed along Commercial Street; the Chinese community faced systematic exclusion and violence during the same era. These absences are part of what these buildings contain.",
+ripple:"The commercial district grew directly from the Capitol's presence — government employment and legislative sessions drove retail demand for 150 years. The Reed Opera House's pivot from government building to arts venue to department store to arts marketplace mirrors downtown Salem's own reinvention across five eras.",
+people:["cyrus_reed"],connections:[7],
+voiceName:"Historic Downtown",
+shortScript:"I'll be honest: I almost wasn't a theatre district. Cyrus Reed spent $75,000 and over a million bricks building the Reed Opera House in 1869 as a planned government building. The legislature reneged. Reed pivoted — shops, hotel, 1,500-seat auditorium. It opened September 27, 1870, for Governor Grover's inaugural ball. Susan B. Anthony and President Hayes both spoke here. At one point it housed the Oregon Supreme Court. At another: the best gambling parlor in town. Look down as you walk — purple glass blocks in the sidewalk mark tunnels underneath. Seven blocks of brick from the 1860s to 1950s. The whole arc of Salem is here in these streets.",
+longScript:`I'll be honest with you: I almost wasn't a theatre district at all. I was nearly a government office building.\n\nCyrus Adams Reed — Civil War general, Oregon legislator, Adjutant General of Oregon — spent $75,000 and over a million bricks building the Reed Opera House in 1869. The original plan was to house the state legislature here. A new administration came in and reneged. Reed pivoted: shops on the ground floor, a first-class hotel, and a 1,500-seat auditorium on the upper floors.\n\nThe building opened September 27, 1870, for the inaugural ball of Governor LaFayette Grover. At various points it housed the Oregon Supreme Court, the State Library, a hotel, saloons — and what has been described as the best gambling parlor in town around 1893.\n\nSusan B. Anthony spoke here. President Rutherford B. Hayes visited.\n\nI am a seven-block district. The buildings along Liberty and Commercial Streets range from the 1860s through the 1950s — Italianate brick, Richardsonian Romanesque, Art Deco. The 11-story First National Bank Building, built in 1927, is still downtown Salem's only skyscraper. Look up at the exterior — you'll find griffins, a standing human figure, and bearded faces carved into the stone.\n\nLook down, too. Beneath the sidewalks runs a network of tunnels, marked by purple glass blocks in the pavement. The tunnels are closed now. What happened in them depends on who you ask.\n\nThe Reed Opera House is still there. Go inside. It's been a lot of things. It still is.`
+},
+{num:10,name:"Gaiety Hollow — Lord & Schryver Garden",short:"Gaiety Hollow",era:"1930s",eraType:"victorian",chronYear:1930,lat:44.9331,lng:-123.0219,walk:"2 min walk from Deepwood",time:"20 min",admission:"Free (open garden days) or by appointment",hours:"Select Saturdays Apr–Sep; check lordschryver.org",parking:"Street parking on Mission St SE. Parallel to Deepwood.",accessible:"Some uneven surfaces due to historic garden character.",seasonal:"Best April–September when the garden is at peak. Open Garden Saturdays draw knowledgeable visitors — good for conversation.",website:"https://lordschryver.org/gaiety-hollow/",
+historicPhoto:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Deepwood_Estate_Salem_Oregon.jpg/640px-Deepwood_Estate_Salem_Oregon.jpg",
+historicCaption:"Lord & Schryver's Gaiety Hollow, 545 Mission St SE, Salem — the home and studio of the Pacific Northwest's pioneering women landscape architects (Wikimedia Commons)",
+thenNowNote:"Lord and Schryver lived and worked here from 1929 until their deaths. The Lord & Schryver Conservancy purchased the property in 2015 and has restored the garden to its period of significance.",
+desc:"The home, garden, and studio of Elizabeth Lord and Edith Schryver — the Pacific Northwest's first women-owned landscape architecture firm — two blocks from Deepwood, the garden they designed for Alice Brown.",
+detail:"Located at 545 Mission Street SE, Gaiety Hollow was the base of operations for Lord & Schryver from 1929 onward. Elizabeth Lord and Edith Schryver lived here together for decades, designing over 250 gardens across the Pacific Northwest from this property. The Lord & Schryver Conservancy purchased it in 2015 and restored the garden to its period of significance. It is listed on the National Register of Historic Places.",
+tip:"Open Garden Saturdays draw a mix of garden enthusiasts and historians — the docents here are among the most knowledgeable you'll find anywhere in Salem on the history of women in the arts and professions.",
+dyk:"Elizabeth Lord and Edith Schryver were partners in life as well as in business — one of the earliest publicly known same-sex partnerships in Oregon's professional history. They lived and worked together at Gaiety Hollow for the rest of their lives.",
+dark:"Despite designing over 250 gardens and being widely recognized as leaders in their field, Lord & Schryver were largely written out of Pacific Northwest landscape history for decades after their deaths. The rediscovery and preservation of Gaiety Hollow is part of a broader effort to restore women's contributions to Oregon's cultural heritage.",
+ripple:"The Lord & Schryver Conservancy's preservation of Gaiety Hollow directly inspired renewed interest in their 250+ garden projects across Oregon and Washington. Several other Lord & Schryver gardens are now being documented and restored as a result.",
+people:["elizabeth_lord","edith_schryver"],connections:[4],
+voiceName:"Gaiety Hollow",
+shortScript:"I am a house and garden at 545 Mission Street — two blocks from Deepwood, which we designed. My name is Gaiety Hollow and I was the home and studio of Elizabeth Lord and Edith Schryver for the rest of their lives. They founded the first women-owned landscape architecture firm in the Pacific Northwest from my rooms. They designed over 250 gardens from my dining table. They were partners in business and in life — one of the earliest publicly known same-sex partnerships in Oregon's professional history. When they died, their story was largely forgotten. The Lord & Schryver Conservancy purchased me in 2015 and brought me back. The garden is restored. Their archive is here. Come and see what two women built.",
+longScript:`I am a house and garden at 545 Mission Street SE — two blocks from Deepwood, which we designed.\n\nMy name is Gaiety Hollow. Elizabeth Lord and Edith Schryver moved into me in 1929 when they founded their landscape architecture firm — the first women-owned firm in the Pacific Northwest. They converted my dining room into an office. They spread drawings across my tables and correspondence across my desk. They designed over 250 gardens across Oregon and Washington from these rooms — for Reed College, the Bush House, private estates from the coast to the Cascades.\n\nThey were partners in business and in life. One of the earliest publicly known same-sex partnerships in Oregon's professional history. They lived here together, worked here together, and both died here — Elizabeth in 1976, Edith in 1984.\n\nFor decades after their deaths, their story was largely forgotten. Pacific Northwest landscape history moved on without them.\n\nIn 2015, the Lord & Schryver Conservancy purchased me. They restored the garden to its period of significance. They opened the archive. They began hosting Open Garden Saturdays, bringing visitors back to the property where so much was designed and imagined.\n\nDeepwood — two blocks away — is the only Lord & Schryver domestic garden open to the public. But I am where the work was done.\n\nCome and see what two women built from a house on Mission Street.`
+}
+];
 
-  let active = 0;
+// ── ERA COLORS ────────────────────────────────────────────
+const eraColors={
+  pioneer:{bg:"#E1F5EE",color:"#0F6E56"},
+  civic:{bg:"#E6F1FB",color:"#185FA5"},
+  victorian:{bg:"#FBEAF0",color:"#993556"},
+  cultural:{bg:"#EEEDFE",color:"#534AB7"},
+  commercial:{bg:"#FAEEDA",color:"#854F0B"}
+};
 
-  function render() {
-    const bar = document.getElementById("routeBar");
-    bar.innerHTML = stops.map((s, i) => {
-      const isLast = i === stops.length - 1;
-      return `<div class="stop-dot ${i === active ? 'active' : ''}" onclick="setActive(${i})" role="button" aria-label="Stop ${s.num}: ${s.name}" tabindex="0">
-        <div class="dot">${s.num}</div>
-        <div class="stop-label">${s.short}</div>
-      </div>${!isLast ? '<div class="route-line" aria-hidden="true"></div>' : ''}`;
-    }).join("");
+// ── STATE ────────────────────────────────────────────────
+let active=0,currentFilter='all',currentView='route';
+let isPlaying=false,playInterval=null,audioVersion='short';
+let customSelected=new Set();
+let leafletMap=null,mapMarkers=[];
+const synth=window.speechSynthesis;
 
-    const s = stops[active];
-    const ec = eraColors[s.eraType];
-    document.getElementById("detailPanel").innerHTML = `
-      <div class="detail-panel-top">
-        <h2>Stop ${s.num}: ${s.name}</h2>
-        <span class="era-badge" style="background:${ec.bg};color:${ec.color};">${s.era}</span>
-      </div>
-      <div class="detail-meta">
-        <i class="ti ti-map-pin" aria-hidden="true"></i>${s.walk}
-        &nbsp;·&nbsp;
-        <i class="ti ti-clock" aria-hidden="true"></i>${s.time}
-      </div>
-      <p>${s.detail}</p>
-      <div class="tip-box"><strong>Tip:</strong> ${s.tip}</div>
-    `;
+// ── SHARE / DEEP LINK ─────────────────────────────────────
+function shareStop(){
+  const url=location.origin+location.pathname+'?stop='+active;
+  if(navigator.share)navigator.share({title:stops[active].name,url});
+  else navigator.clipboard.writeText(url).then(()=>alert('Link copied:\n'+url));
+}
+function loadDeepLink(){
+  const p=new URLSearchParams(location.search).get('stop');
+  if(p!==null&&!isNaN(p)&&+p>=0&&+p<stops.length)active=+p;
+}
 
-    document.getElementById("cardsGrid").innerHTML = stops.map((s, i) => {
-      const ec = eraColors[s.eraType];
-      return `<div class="card ${i === active ? 'active' : ''}" onclick="setActive(${i})" role="button" tabindex="0">
-        <div class="card-num">Stop ${s.num} · ${s.walk}</div>
-        <div class="card-title">${s.name}</div>
-        <span class="era-badge" style="background:${ec.bg};color:${ec.color};margin-bottom:8px;display:inline-block;">${s.era}</span>
-        <div class="card-desc">${s.desc}</div>
-        <div class="card-meta"><i class="ti ti-clock" aria-hidden="true"></i>${s.time}</div>
-      </div>`;
-    }).join("");
+// ── AUDIO ────────────────────────────────────────────────
+function setAudioVersion(v){
+  audioVersion=v;
+  document.querySelectorAll('.len-btn').forEach(b=>b.classList.remove('active'));
+  const b=document.getElementById('len-'+v);if(b)b.classList.add('active');
+  const tb=document.getElementById('tb');
+  if(tb)tb.innerHTML=(v==='short'?stops[active].shortScript:stops[active].longScript).replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+  if(isPlaying){stopAudio();toggleAudio();}
+}
+function stopAudio(){
+  synth.cancel();clearInterval(playInterval);isPlaying=false;
+  const f=document.getElementById('wf');if(f)f.style.width='0%';
+  updatePlayBtn(false);
+}
+function toggleAudio(){
+  if(isPlaying){stopAudio();return;}
+  const s=stops[active];
+  const text=audioVersion==='short'?s.shortScript:s.longScript;
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.rate=0.91;utt.pitch=1.0;
+  isPlaying=true;updatePlayBtn(true);
+  let elapsed=0;const dur=text.length*58;
+  playInterval=setInterval(()=>{
+    elapsed+=250;
+    const pct=Math.min(elapsed/dur*100,99);
+    const f=document.getElementById('wf');const t=document.getElementById('at');
+    if(f)f.style.width=pct+'%';
+    if(t){const sec=Math.floor(elapsed/1000),tot=Math.floor(dur/1000);t.textContent=fmt(sec)+' / '+fmt(tot);}
+  },250);
+  utt.onend=utt.onerror=()=>{isPlaying=false;clearInterval(playInterval);updatePlayBtn(false);const f=document.getElementById('wf');if(f)f.style.width='100%';};
+  synth.speak(utt);
+}
+function fmt(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
+function updatePlayBtn(p){
+  const b=document.getElementById('pb');if(!b)return;
+  b.innerHTML=p?'<i class="ti ti-player-pause"></i>':'<i class="ti ti-player-play"></i>';
+}
+function toggleTranscript(){
+  const b=document.getElementById('tb'),btn=document.getElementById('ttb');if(!b)return;
+  b.classList.toggle('open');
+  btn.innerHTML=b.classList.contains('open')?'<i class="ti ti-align-left" style="font-size:13px"></i> &#9650; Hide transcript':'<i class="ti ti-align-left" style="font-size:13px"></i> &#9660; Read transcript';
+}
+function buildBars(){
+  return[6,10,14,18,22,16,12,20,24,18,14,10,16,22,18,12,8,16,20,14,10,18,22,16,12].map(h=>`<span style="height:${h}px"></span>`).join('');
+}
 
-    document.getElementById("prevBtn").disabled = active === 0;
-    document.getElementById("nextBtn").disabled = active === stops.length - 1;
-  }
+// ── PEOPLE MODAL ──────────────────────────────────────────
+function showPerson(key){
+  const p=people[key];if(!p)return;
+  document.getElementById('mName').textContent=p.name;
+  document.getElementById('mDates').textContent=p.dates+' \u00b7 '+p.role;
+  document.getElementById('mBio').textContent=p.bio;
+  document.getElementById('mLegacy').textContent=p.legacy;
+  document.getElementById('personModal').classList.add('open');
+}
+function closeModal(){document.getElementById('personModal').classList.remove('open');}
 
-  function setActive(i) {
-    active = i;
-    render();
-    document.getElementById("detailPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
-  function navigate(dir) {
-    const next = active + dir;
-    if (next >= 0 && next < stops.length) setActive(next);
-  }
-
-  document.addEventListener("keydown", e => {
-    if (e.key === "ArrowRight") navigate(1);
-    if (e.key === "ArrowLeft") navigate(-1);
-  });
-
+// ── FILTER ───────────────────────────────────────────────
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
   render();
-</script>
+}
+function vis(s){return currentFilter==='all'||s.eraType===currentFilter;}
 
+// ── MAP ──────────────────────────────────────────────────
+function initMap(){
+  if(leafletMap)return;
+  const mc=document.getElementById('mapContainer');
+  leafletMap=L.map(mc,{zoomControl:true}).setView([44.938,-123.022],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom:19
+  }).addTo(leafletMap);
+  rebuildMapMarkers();
+  // draw route polyline
+  const coords=stops.map(s=>[s.lat,s.lng]);
+  L.polyline(coords,{color:'#185FA5',weight:2.5,opacity:0.6,dashArray:'6,6'}).addTo(leafletMap);
+}
+function rebuildMapMarkers(){
+  mapMarkers.forEach(m=>m.remove());mapMarkers=[];
+  stops.forEach((s,i)=>{
+    const ec=eraColors[s.eraType];
+    const icon=L.divIcon({
+      html:`<div style="width:28px;height:28px;border-radius:50%;background:${i===active?'#185FA5':ec.bg};border:2px solid ${ec.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:${i===active?'#fff':ec.color};box-shadow:0 1px 4px rgba(0,0,0,.25)">${s.num}</div>`,
+      iconSize:[28,28],iconAnchor:[14,14],className:''
+    });
+    const m=L.marker([s.lat,s.lng],{icon}).addTo(leafletMap);
+    m.bindPopup(`<div class="map-stop-popup"><h3>${s.name}</h3><p>${s.walk} &middot; ${s.time}</p><p style="color:var(--accent);cursor:pointer;margin-top:4px" onclick="setActive(${i});setView('route')">View stop &rarr;</p></div>`);
+    m.on('click',()=>m.openPopup());
+    mapMarkers.push(m);
+  });
+  if(leafletMap)leafletMap.setView([stops[active].lat,stops[active].lng],14);
+}
+
+// ── VIEW ────────────────────────────────────────────────
+function setView(v){
+  if(isPlaying)stopAudio();
+  currentView=v;
+  const dp=document.getElementById('detailPanel');
+  const nb=document.getElementById('navBtns');
+  const mc=document.getElementById('mapContainer');
+  dp.style.display=v==='route'?'':'none';
+  nb.style.display=v==='route'?'':'none';
+  mc.classList.toggle('visible',v==='map');
+  document.getElementById('timelinePanel').classList.toggle('visible',v==='timeline');
+  document.getElementById('cardsPanel').classList.toggle('visible',v==='cards');
+  document.getElementById('customPanel').classList.toggle('visible',v==='custom');
+  ['btnRoute','btnMap','btnTimeline','btnCards','btnCustom'].forEach(id=>{
+    const b=document.getElementById(id);if(b)b.classList.remove('active');
+  });
+  const map2={route:'btnRoute',map:'btnMap',timeline:'btnTimeline',cards:'btnCards',custom:'btnCustom'};
+  const ab=document.getElementById(map2[v]);if(ab)ab.classList.add('active');
+  if(v==='map'){setTimeout(()=>{initMap();rebuildMapMarkers();leafletMap.invalidateSize();},50);}
+  if(v==='timeline')renderTimeline();
+  if(v==='cards')renderCards();
+  if(v==='custom')renderCustom();
+}
+
+// ── ROUTE BAR ────────────────────────────────────────────
+function renderRouteBar(){
+  document.getElementById('routeBar').innerHTML=stops.map((s,i)=>{
+    const last=i===stops.length-1;
+    return`<div class="stop-dot ${i===active?'active':''} ${!vis(s)?'dim':''}" onclick="setActive(${i})" role="button" tabindex="0" aria-label="Stop ${s.num}: ${s.name}">
+      <div class="dot">${s.num}</div><div class="stop-label">${s.short}</div>
+    </div>${!last?'<div class="route-line"></div>':''}`;
+  }).join('');
+}
+
+// ── DETAIL ───────────────────────────────────────────────
+function renderDetail(){
+  if(isPlaying)stopAudio();
+  const s=stops[active];
+  const ec=eraColors[s.eraType];
+  // then/now
+  const historicImg=s.historicPhoto?`<img src="${s.historicPhoto}" alt="${s.historicCaption}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="then-now-placeholder" style="display:none"><i class="ti ti-photo"></i>Historic photo unavailable</div><div class="then-now-caption">${s.historicCaption}</div>`
+    :`<div class="then-now-placeholder"><i class="ti ti-photo"></i>Historic photo<br>${s.thenNowNote}</div>`;
+  const nowContent=`<div class="then-now-placeholder"><i class="ti ti-camera"></i>Add your photo<br><span style="font-size:10px;color:var(--text3)">${s.photoAlt||s.name}</span></div>`;
+  // people
+  const pHtml=s.people&&s.people.length?`<div class="section-h"><i class="ti ti-user"></i>Key figures</div><div class="people-grid">${s.people.map(k=>{const p=people[k];return p?`<div class="person-card" onclick="showPerson('${k}')"><div class="person-name">${p.name}</div><div class="person-role">${p.role}</div></div>`:''}).join('')}</div>`:'';
+  // connections
+  const cHtml=s.connections&&s.connections.length?`<div class="section-h"><i class="ti ti-arrow-wave-right-up"></i>Connects to</div><div class="conn-chips">${s.connections.map(ci=>`<span class="conn-chip" onclick="setActive(${ci})">${stops[ci].name}</span>`).join('')}</div>`:'';
+  document.getElementById('detailPanel').innerHTML=`
+    <div class="detail-top">
+      <h2>Stop ${s.num}: ${s.name}</h2>
+      <span class="era-badge" style="background:${ec.bg};color:${ec.color}">${s.era}</span>
+    </div>
+    <div class="detail-meta"><i class="ti ti-map-pin"></i>${s.walk}&nbsp;&middot;&nbsp;<i class="ti ti-clock"></i>${s.time}</div>
+    <div class="then-now">
+      <div class="then-now-item">${historicImg}<div class="then-now-label">Then</div></div>
+      <div class="then-now-item">${nowContent}<div class="then-now-label">Now</div></div>
+    </div>
+    <div class="info-row">
+      <div class="info-pill"><i class="ti ti-ticket"></i>${s.admission}</div>
+      <div class="info-pill"><i class="ti ti-door-enter"></i>${s.hours}</div>
+      <div class="info-pill"><i class="ti ti-external-link"></i><a href="${s.website}" target="_blank" rel="noopener">Website</a></div>
+    </div>
+    <div class="info-row"><div class="info-pill" style="max-width:100%;border-radius:var(--r-md)"><i class="ti ti-parking"></i>${s.parking}</div></div>
+    <p class="access-note"><i class="ti ti-wheelchair" style="font-size:13px;vertical-align:-2px;margin-right:3px"></i>${s.accessible}</p>
+    <div class="season-note"><i class="ti ti-sun"></i><span>${s.seasonal}</span></div>
+    <div class="audio-section">
+      <div class="audio-header"><i class="ti ti-microphone" style="color:var(--accent);font-size:16px"></i><span>${s.voiceName} speaks</span><span class="voice-badge">First-person narration</span></div>
+      <div class="audio-len-toggle">
+        <button class="len-btn ${audioVersion==='short'?'active':''}" id="len-short" onclick="setAudioVersion('short')">60-sec version</button>
+        <button class="len-btn ${audioVersion==='long'?'active':''}" id="len-long" onclick="setAudioVersion('long')">Full narration</button>
+      </div>
+      <div class="audio-controls">
+        <button class="play-btn" id="pb" onclick="toggleAudio()" aria-label="Play narration"><i class="ti ti-player-play"></i></button>
+        <div class="waveform" onclick="toggleAudio()"><div class="waveform-fill" id="wf"></div><div class="waveform-bars">${buildBars()}</div></div>
+        <span class="audio-time" id="at">0:00</span>
+      </div>
+      <button class="transcript-toggle" id="ttb" onclick="toggleTranscript()"><i class="ti ti-align-left" style="font-size:13px"></i> &#9660; Read transcript</button>
+      <div class="transcript-box" id="tb">${(audioVersion==='short'?s.shortScript:s.longScript).replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>
+    </div>
+    <div class="detail-body">${s.detail}</div>
+    <div class="tip-box"><strong>Tip:</strong> ${s.tip}</div>
+    <div class="dyk-box"><div class="dyk-label">Did you know?</div><p>${s.dyk}</p></div>
+    <div class="dark-box"><div class="dark-label"><i class="ti ti-history" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>The fuller history</div><p>${s.dark}</p></div>
+    <div class="ripple-box"><div class="ripple-label">Ripple effects</div><p>${s.ripple}</p></div>
+    ${pHtml}${cHtml}
+  `;
+}
+
+// ── TIMELINE ─────────────────────────────────────────────
+function renderTimeline(){
+  const sorted=[...stops].filter(s=>vis(s)).sort((a,b)=>a.chronYear-b.chronYear);
+  document.getElementById('timelinePanel').innerHTML=sorted.map(s=>{
+    const ec=eraColors[s.eraType];const i=stops.indexOf(s);
+    return`<div class="tl-item" onclick="setActive(${i});setView('route')">
+      <div class="tl-year">${s.chronYear}</div>
+      <div class="tl-content"><h3>${s.name}</h3><p>${s.desc.substring(0,110)}&hellip;</p>
+      <span class="era-badge" style="background:${ec.bg};color:${ec.color};font-size:11px;margin-top:6px;display:inline-block">${s.era}</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ── CARDS ────────────────────────────────────────────────
+function renderCards(){
+  document.getElementById('cardsGrid').innerHTML=stops.map((s,i)=>{
+    const ec=eraColors[s.eraType];
+    return`<div class="card ${i===active?'active':''} ${!vis(s)?'dim':''}" onclick="setActive(${i});setView('route')">
+      <div class="card-num">Stop ${s.num} &middot; ${s.walk}</div>
+      <div class="card-title">${s.name}</div>
+      <span class="era-badge" style="background:${ec.bg};color:${ec.color};margin-bottom:8px;display:inline-block">${s.era}</span>
+      <div class="card-desc">${s.desc}</div>
+      <div class="card-meta"><i class="ti ti-clock" style="font-size:13px;vertical-align:-2px;margin-right:3px"></i>${s.time} &middot; ${s.admission}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── CUSTOM ROUTE ─────────────────────────────────────────
+function renderCustom(){
+  document.getElementById('customPanel').innerHTML=`
+    <h3 style="font-size:14px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-route"></i>Build your own route</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Select the stops you want to visit and generate a custom itinerary with estimated time and admission.</p>
+    <div class="custom-stops">${stops.map((s,i)=>`<button class="cstop-btn ${customSelected.has(i)?'on':''}" onclick="toggleCS(${i})">${s.short}</button>`).join('')}</div>
+    <div class="custom-actions">
+      <button onclick="selAll()">Select all</button>
+      <button onclick="clearCS()">Clear</button>
+      <button class="primary" onclick="buildRoute()"><i class="ti ti-route" style="font-size:13px"></i> Build route</button>
+    </div>
+    <div class="custom-result" id="cr"></div>`;
+}
+function toggleCS(i){if(customSelected.has(i))customSelected.delete(i);else customSelected.add(i);renderCustom();}
+function selAll(){stops.forEach((_,i)=>customSelected.add(i));renderCustom();}
+function clearCS(){customSelected.clear();renderCustom();}
+function buildRoute(){
+  if(!customSelected.size){document.getElementById('cr').innerHTML='<p>Select at least one stop.</p>';return;}
+  const sel=[...customSelected].sort((a,b)=>a-b).map(i=>stops[i]);
+  let html=`<p style="font-weight:500;margin-bottom:8px">Your ${sel.length}-stop route:</p>`;
+  let total=0;
+  sel.forEach((s,idx)=>{
+    const min=parseInt(s.time)||30;total+=min;
+    html+=`<p style="margin-bottom:4px"><strong>${idx+1}. ${s.name}</strong> &mdash; ${s.time} &middot; ${s.admission}`;
+    if(idx<sel.length-1)html+=`<br><span style="color:var(--text3);font-size:12px">&darr; then ${sel[idx+1].walk}</span>`;
+    html+='</p>';
+  });
+  html+=`<p style="margin-top:10px;color:var(--text2)">Estimated time at stops: <strong>${Math.floor(total/60)}h ${total%60}m</strong></p>`;
+  document.getElementById('cr').innerHTML=html;
+}
+
+// ── MAIN RENDER ──────────────────────────────────────────
+function render(){
+  renderRouteBar();
+  if(currentView==='route')renderDetail();
+  else if(currentView==='timeline')renderTimeline();
+  else if(currentView==='cards')renderCards();
+  else if(currentView==='custom')renderCustom();
+  else if(currentView==='map')rebuildMapMarkers();
+  document.getElementById('prevBtn').disabled=active===0;
+  document.getElementById('nextBtn').disabled=active===stops.length-1;
+}
+
+function setActive(i){
+  active=i;
+  history.replaceState(null,'','?stop='+i);
+  if(currentView!=='route')setView('route');
+  else{renderDetail();renderRouteBar();}
+  document.getElementById('prevBtn').disabled=active===0;
+  document.getElementById('nextBtn').disabled=active===stops.length-1;
+  document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function navigate(dir){const n=active+dir;if(n>=0&&n<stops.length)setActive(n);}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'&&!e.target.closest('input,textarea'))navigate(1);
+  if(e.key==='ArrowLeft'&&!e.target.closest('input,textarea'))navigate(-1);
+  if(e.key===' '&&!e.target.closest('button,input,textarea')){e.preventDefault();toggleAudio();}
+  if(e.key==='Escape')closeModal();
+});
+
+loadDeepLink();
+render();
+</script>
 </body>
 </html>
