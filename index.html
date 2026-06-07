@@ -1,9 +1,414 @@
-html<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>My Website</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salem, Oregon History Tour</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #ffffff;
+      --color-bg-secondary: #f5f5f3;
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #5f5e5a;
+      --color-border: rgba(0,0,0,0.12);
+      --color-border-hover: rgba(0,0,0,0.25);
+      --color-accent: #185FA5;
+      --color-accent-light: #E6F1FB;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #1c1c1a;
+        --color-bg-secondary: #252523;
+        --color-text-primary: #f0ede8;
+        --color-text-secondary: #9a9890;
+        --color-border: rgba(255,255,255,0.12);
+        --color-border-hover: rgba(255,255,255,0.25);
+        --color-accent: #5fa8e8;
+        --color-accent-light: #0c2a42;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      font-size: 16px;
+      line-height: 1.7;
+      padding: 0 1rem;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .tour-header {
+      padding: 2rem 0 1.25rem;
+      border-bottom: 0.5px solid var(--color-border);
+      margin-bottom: 1.5rem;
+    }
+    .tour-header h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
+    .tour-header p { font-size: 14px; color: var(--color-text-secondary); }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-val { font-size: 22px; font-weight: 500; }
+    .stat-label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+    .route-bar {
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      padding: 1rem 0;
+      margin-bottom: 1.5rem;
+      scrollbar-width: none;
+      gap: 0;
+    }
+    .route-bar::-webkit-scrollbar { display: none; }
+    .stop-dot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .stop-dot .dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      border: 0.5px solid var(--color-border);
+      background: var(--color-bg);
+      color: var(--color-text-secondary);
+      transition: all 0.15s;
+    }
+    .stop-dot.active .dot {
+      background: var(--color-accent);
+      color: var(--color-accent-light);
+      border-color: var(--color-accent);
+    }
+    .stop-dot .stop-label {
+      font-size: 10px;
+      color: var(--color-text-secondary);
+      text-align: center;
+      max-width: 56px;
+      line-height: 1.3;
+    }
+    .route-line {
+      flex: 1;
+      min-width: 20px;
+      height: 0.5px;
+      background: var(--color-border);
+      flex-shrink: 0;
+      margin-bottom: 18px;
+    }
+
+    .detail-panel {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .detail-panel-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .detail-panel h2 { font-size: 18px; font-weight: 500; }
+    .era-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-md);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .detail-meta {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+    .detail-meta i { font-size: 14px; vertical-align: -2px; margin-right: 4px; }
+    .detail-panel p { font-size: 14px; line-height: 1.7; color: var(--color-text-secondary); margin-bottom: 12px; }
+    .tip-box {
+      background: var(--color-bg);
+      border: 0.5px solid var(--color-border);
+      border-left: 3px solid var(--color-accent);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 480px) { .cards-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--color-bg);
+      border: 0.5px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: var(--color-border-hover); }
+    .card.active { border: 1.5px solid var(--color-accent); }
+    .card-num { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
+    .card-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+    .card-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 10px; }
+    .card-meta { display: flex; gap: 12px; font-size: 12px; color: var(--color-text-secondary); align-items: center; }
+    .card-meta i { font-size: 14px; }
+
+    .nav-btns {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 2rem;
+    }
+    .nav-btns button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      padding: 8px 14px;
+      background: transparent;
+      border: 0.5px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text-primary);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .nav-btns button:hover { background: var(--color-bg-secondary); }
+    .nav-btns button:disabled { opacity: 0.35; cursor: default; }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      padding: 1rem 0 2rem;
+      border-top: 0.5px solid var(--color-border);
+    }
+  </style>
 </head>
 <body>
-    <h1>Hello World! My GitHub Pages site is live.</h1>
+
+<header class="tour-header">
+  <h1>Salem, Oregon history tour</h1>
+  <p>8 stops · Walking &amp; driving route · Est. 4–5 hours</p>
+</header>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-val">8</div><div class="stat-label">Historic stops</div></div>
+  <div class="stat"><div class="stat-val">1840s</div><div class="stat-label">Earliest stop</div></div>
+  <div class="stat"><div class="stat-val">4–5 hrs</div><div class="stat-label">Estimated time</div></div>
+</div>
+
+<nav aria-label="Tour route" class="route-bar" id="routeBar"></nav>
+
+<section aria-live="polite" class="detail-panel" id="detailPanel"></section>
+
+<section class="cards-grid" id="cardsGrid"></section>
+
+<div class="nav-btns">
+  <button id="prevBtn" onclick="navigate(-1)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Previous</button>
+  <button id="nextBtn" onclick="navigate(1)">Next <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+</div>
+
+<footer>Salem, Oregon History Tour &mdash; Built with GitHub Pages</footer>
+
+<script>
+  const stops = [
+    {
+      num: 1,
+      name: "Mission Mill Museum",
+      short: "Mission Mill",
+      era: "1840s",
+      eraType: "pioneer",
+      walk: "Start here",
+      time: "45 min",
+      desc: "The oldest surviving woolen mill complex in the Pacific Northwest. Founded by Methodist missionaries, this site captures Salem's transformation from mission outpost to pioneer settlement.",
+      detail: "Built by the Methodist Mission in 1841, Mission Mill became a hub of early commerce in the Willamette Valley. The Thomas Kay Woolen Mill on this site later grew into one of Oregon's largest textile operations. The museum complex preserves four original historic homes alongside the mill machinery — giving an unusually complete picture of daily pioneer life.",
+      tip: "Stop into the Jason Lee House — it's the oldest standing American home in the Pacific Northwest."
+    },
+    {
+      num: 2,
+      name: "Willamette Heritage Center",
+      short: "Heritage Ctr",
+      era: "1840s–1900s",
+      eraType: "pioneer",
+      walk: "2 min walk",
+      time: "30 min",
+      desc: "Adjacent to Mission Mill, the Heritage Center contextualizes Salem's growth from a missionary outpost into Oregon's capital city, with rotating exhibits on Willamette Valley history.",
+      detail: "The center houses artifacts, photographs, and oral histories that trace Salem's evolution over 175 years. Exhibits explore the region's Indigenous Kalapuyan people, the Oregon Trail, and the city's role in territorial politics. A great bridge between the mill visit and the Capitol building to come.",
+      tip: "Check their rotating exhibits before you visit — the schedule is on their website and changes seasonally."
+    },
+    {
+      num: 3,
+      name: "Oregon State Capitol",
+      short: "State Capitol",
+      era: "1938",
+      eraType: "civic",
+      walk: "15 min walk",
+      time: "30 min",
+      desc: "Oregon's Art Deco capitol, completed in 1938, crowned by the famous gold-leaf Pioneer atop its dome. The building replaced two earlier capitols lost to fire.",
+      detail: "The current Capitol is Salem's third — its predecessors burned in 1855 and 1935. Designed by Francis Keally, the building features striking Art Deco murals in the rotunda depicting Oregon's history and the state's founding industries. The Pioneer statue atop the dome stands 23 feet tall and is covered in gold leaf.",
+      tip: "Free guided tours run Monday through Friday. The rotunda murals alone are worth the stop."
+    },
+    {
+      num: 4,
+      name: "Capitol Mall & Willson Park",
+      short: "Capitol Mall",
+      era: "1930s–present",
+      eraType: "civic",
+      walk: "2 min walk",
+      time: "15 min",
+      desc: "The formal green space surrounding the Capitol, designed in the City Beautiful tradition. A peaceful break between stops and a good vantage for Capitol photographs.",
+      detail: "Willson Park was named for William H. Willson, a Methodist missionary who platted the original town of Salem in 1844. The park's tree canopy includes many mature specimens planted in the early 20th century. The mall was redesigned as part of the Capitol construction project in the 1930s to create a formal civic axis.",
+      tip: "Best Capitol photos are from the north end of the mall, especially in morning light."
+    },
+    {
+      num: 5,
+      name: "Deepwood Museum & Gardens",
+      short: "Deepwood",
+      era: "1894",
+      eraType: "victorian",
+      walk: "20 min drive",
+      time: "45 min",
+      desc: "An 1894 Queen Anne-style Victorian home with original interiors intact, set on formal English gardens. One of Salem's finest historic homes.",
+      detail: "Built by Dr. Luke Port in 1894, Deepwood passed through several prominent Salem families before being preserved as a museum. The house retains much of its original interior woodwork, stained glass, and furnishings. The surrounding formal gardens were designed by landscape architects Elizabeth Lord and Edith Schryver in the 1920s — a pioneering women-run landscape firm in Oregon.",
+      tip: "The gardens are free to walk — arrive early and have them almost to yourself."
+    },
+    {
+      num: 6,
+      name: "Bush's Pasture Park & House",
+      short: "Bush House",
+      era: "1877",
+      eraType: "victorian",
+      walk: "5 min drive",
+      time: "30 min",
+      desc: "The 1877 Italianate mansion of newspaper publisher Asahel Bush II, set on 90 acres of parkland. One of Oregon's most significant examples of 19th-century residential architecture.",
+      detail: "Asahel Bush II was one of Salem's most powerful figures — a banker and newspaper editor who shaped Oregon politics for decades. His home remained in the Bush family for nearly 100 years. The interior is preserved with original furnishings, and the estate includes Oregon's first greenhouse still in use, operating continuously since the 1880s.",
+      tip: "The greenhouse is open for tours and still grows heritage roses and exotic plants."
+    },
+    {
+      num: 7,
+      name: "Historic Elsinore Theatre",
+      short: "Elsinore",
+      era: "1926",
+      eraType: "cultural",
+      walk: "10 min drive",
+      time: "20 min",
+      desc: "A stunning 1926 Tudor-Gothic revival theatre, one of the finest examples of atmospheric theatre design in the Pacific Northwest.",
+      detail: "Built in 1926 by architect Fred Elford, the Elsinore was designed to evoke the atmosphere of Hamlet's castle — hence the name. The interior features hand-painted murals, Gothic stonework details, and an original Wurlitzer pipe organ. It operated as a movie palace into the 1980s and now hosts live performances. Listed on the National Register of Historic Places.",
+      tip: "Even if you can't catch a show, walk through the lobby — the interior is extraordinary."
+    },
+    {
+      num: 8,
+      name: "Historic Downtown & Commercial Street",
+      short: "Downtown",
+      era: "1890s–1930s",
+      eraType: "commercial",
+      walk: "5 min walk",
+      time: "30 min",
+      desc: "Salem's original commercial core preserves a remarkable density of late-Victorian and early 20th-century brick storefronts along Liberty and Commercial Streets.",
+      detail: "The blocks around Liberty Street NE contain some of the finest intact commercial architecture in Oregon — brick facades, cast-iron details, and corner buildings that date from Salem's first boom period in the 1890s. Walking this district closes the loop: by the time you've seen the mission, the capitol, and the Victorian homes, the commercial streetscape shows how all those forces came together into a real city.",
+      tip: "End the tour with a meal — the downtown restaurant scene has grown significantly in recent years."
+    }
+  ];
+
+  const eraColors = {
+    pioneer:    { bg: "#E1F5EE", color: "#0F6E56" },
+    civic:      { bg: "#E6F1FB", color: "#185FA5" },
+    victorian:  { bg: "#FBEAF0", color: "#993556" },
+    cultural:   { bg: "#EEEDFE", color: "#534AB7" },
+    commercial: { bg: "#FAEEDA", color: "#854F0B" }
+  };
+
+  let active = 0;
+
+  function render() {
+    const bar = document.getElementById("routeBar");
+    bar.innerHTML = stops.map((s, i) => {
+      const isLast = i === stops.length - 1;
+      return `<div class="stop-dot ${i === active ? 'active' : ''}" onclick="setActive(${i})" role="button" aria-label="Stop ${s.num}: ${s.name}" tabindex="0">
+        <div class="dot">${s.num}</div>
+        <div class="stop-label">${s.short}</div>
+      </div>${!isLast ? '<div class="route-line" aria-hidden="true"></div>' : ''}`;
+    }).join("");
+
+    const s = stops[active];
+    const ec = eraColors[s.eraType];
+    document.getElementById("detailPanel").innerHTML = `
+      <div class="detail-panel-top">
+        <h2>Stop ${s.num}: ${s.name}</h2>
+        <span class="era-badge" style="background:${ec.bg};color:${ec.color};">${s.era}</span>
+      </div>
+      <div class="detail-meta">
+        <i class="ti ti-map-pin" aria-hidden="true"></i>${s.walk}
+        &nbsp;·&nbsp;
+        <i class="ti ti-clock" aria-hidden="true"></i>${s.time}
+      </div>
+      <p>${s.detail}</p>
+      <div class="tip-box"><strong>Tip:</strong> ${s.tip}</div>
+    `;
+
+    document.getElementById("cardsGrid").innerHTML = stops.map((s, i) => {
+      const ec = eraColors[s.eraType];
+      return `<div class="card ${i === active ? 'active' : ''}" onclick="setActive(${i})" role="button" tabindex="0">
+        <div class="card-num">Stop ${s.num} · ${s.walk}</div>
+        <div class="card-title">${s.name}</div>
+        <span class="era-badge" style="background:${ec.bg};color:${ec.color};margin-bottom:8px;display:inline-block;">${s.era}</span>
+        <div class="card-desc">${s.desc}</div>
+        <div class="card-meta"><i class="ti ti-clock" aria-hidden="true"></i>${s.time}</div>
+      </div>`;
+    }).join("");
+
+    document.getElementById("prevBtn").disabled = active === 0;
+    document.getElementById("nextBtn").disabled = active === stops.length - 1;
+  }
+
+  function setActive(i) {
+    active = i;
+    render();
+    document.getElementById("detailPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function navigate(dir) {
+    const next = active + dir;
+    if (next >= 0 && next < stops.length) setActive(next);
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") navigate(1);
+    if (e.key === "ArrowLeft") navigate(-1);
+  });
+
+  render();
+</script>
+
 </body>
 </html>
